@@ -17,6 +17,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
+    "n8n:pull": "node sync-n8n.js pull",
+    "n8n:push": "node sync-n8n.js push",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
