@@ -1,50 +1,48 @@
 const fs = require('fs');
-const axios = require('axios');
+const { exec } = require('child_process');
+const util = require('util');
+const execPromise = util.promisify(exec);
 
-const N8N_URL = 'http://localhost:5678/api/v1';
-const API_KEY = 'teamkey123';
-
-// Export all workflows to JSON files
 async function pullWorkflows() {
   try {
-    const response = await axios.get(`${N8N_URL}/workflows`, {
-      headers: { 'X-N8N-API-KEY': API_KEY }
+    console.log('Exporting workflows from n8n...');
+    
+    // Use Docker exec to export
+    await execPromise('docker exec teacher-assistant-n8n-1 n8n export:workflow --all --output=/home/node/.n8n/workflows.json');
+    
+    // Copy from container
+    await execPromise('docker cp teacher-assistant-n8n-1:/home/node/.n8n/workflows.json ./n8n-workflows/');
+    
+    console.log('✓ Workflows exported to n8n-workflows/workflows.json');
+    
+    // Optional: Split into individual files
+    const data = fs.readFileSync('./n8n-workflows/workflows.json', 'utf8');
+    const workflows = JSON.parse(data);
+    
+    workflows.forEach(workflow => {
+      const filename = `n8n-workflows/${workflow.name.replace(/[^a-z0-9]/gi, '_')}.json`;
+      fs.writeFileSync(filename, JSON.stringify(workflow, null, 2));
+      console.log(`  - ${workflow.name}.json`);
     });
     
-    if (!fs.existsSync('n8n-workflows')) {
-      fs.mkdirSync('n8n-workflows');
-    }
-    
-    response.data.data.forEach(workflow => {
-      fs.writeFileSync(
-        `n8n-workflows/${workflow.name}.json`,
-        JSON.stringify(workflow, null, 2)
-      );
-      console.log(`Exported: ${workflow.name}`);
-    });
   } catch (error) {
-    console.error('Error exporting:', error.message);
+    console.error('Error:', error.message);
   }
 }
 
-// Import all JSON files to n8n
 async function pushWorkflows() {
   try {
-    const files = fs.readdirSync('n8n-workflows');
+    console.log('Importing workflows to n8n...');
     
-    for (const file of files) {
-      if (file.endsWith('.json')) {
-        const workflow = JSON.parse(fs.readFileSync(`n8n-workflows/${file}`));
-        delete workflow.id; // Remove ID to create new
-        
-        await axios.post(`${N8N_URL}/workflows`, workflow, {
-          headers: { 'X-N8N-API-KEY': API_KEY }
-        });
-        console.log(`Imported: ${file}`);
-      }
-    }
+    // Copy workflows.json to container
+    await execPromise('docker cp ./n8n-workflows/workflows.json teacher-assistant-n8n-1:/home/node/.n8n/');
+    
+    // Import using Docker exec
+    await execPromise('docker exec teacher-assistant-n8n-1 n8n import:workflow --input=/home/node/.n8n/workflows.json');
+    
+    console.log('✓ Workflows imported successfully');
   } catch (error) {
-    console.error('Error importing:', error.message);
+    console.error('Error:', error.message);
   }
 }
 

@@ -1,0 +1,100 @@
+{
+  "updatedAt": "2025-11-23T06:51:12.000Z",
+  "createdAt": "2025-11-23T06:17:53.281Z",
+  "id": "L8OP8ikUluR2zebo",
+  "name": "Groq Test Workflow",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "test-groq",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f641908d-1a96-4b99-9530-b2b1f249b848",
+      "name": "Webhook",
+      "webhookId": "fb188ed6-a959-4240-85b4-ca12c23f0685"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_GROQ_API_KEY"
+            },
+            {
+              "name": "Content-Type",
+              "value": "=application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-oss-120b\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"{{$json.body.text}}\"\n    }\n  ],\n  \"temperature\": 0.7,\n  \"max_tokens\": 500\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e4283244-9fbe-429b-876c-305850e2d23c",
+      "name": "HTTP Request"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "369f2fa8-e03c-4b5e-bfab-ec4f1dd542c2",
+  "versionCounter": 22,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-11-23T06:17:53.294Z",
+      "createdAt": "2025-11-23T06:17:53.294Z",
+      "role": "workflow:owner",
+      "workflowId": "L8OP8ikUluR2zebo",
+      "projectId": "Q2G5YBJ0WltmvbxJ",
+      "project": {
+        "updatedAt": "2025-11-23T06:08:53.090Z",
+        "createdAt": "2025-11-20T11:33:10.575Z",
+        "id": "Q2G5YBJ0WltmvbxJ",
+        "name": "Maisum Yusuf mhayati.c@tetco.sa <mhayati.c@tetco.sa>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
