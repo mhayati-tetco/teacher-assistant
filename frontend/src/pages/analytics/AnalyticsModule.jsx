@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { moeColors, moduleColors, moeBorderRadius } from '../../theme/moeTheme';
 
@@ -8,6 +8,56 @@ import { moeColors, moduleColors, moeBorderRadius } from '../../theme/moeTheme';
 
 const AnalyticsMain = ({ language = 'ar' }) => {
   const isArabic = language === 'ar';
+  const [loading, setLoading] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState(null);
+  const [error, setError] = useState(null);
+  const [sending, setSending] = useState(false);
+
+  // n8n webhook URL - replace with your actual webhook URL
+  const N8N_WEBHOOK_URL = process.env.REACT_APP_N8N_WEBHOOK_URL || 
+    'http://localhost:5678/webhook-test/MOE-test';
+
+  // Fetch analytics data on component mount
+  useEffect(() => {
+    fetchAnalyticsData();
+  }, []);
+
+  const fetchAnalyticsData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${N8N_WEBHOOK_URL}/get-data`);
+      if (!response.ok) throw new Error('Failed to fetch analytics data');
+      const data = await response.json();
+      setAnalyticsData(data);
+    } catch (err) {
+      console.error('Error fetching analytics:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateReport = async () => {
+    setSending(true);
+    try {
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ success: true }),
+      });
+      
+      if (!response.ok) throw new Error('Failed to send data to n8n');
+      const result = await response.json();
+      alert(isArabic ? 'تم الإرسال بنجاح!' : 'Sent successfully!');
+    } catch (error) {
+      alert(isArabic ? 'فشل الإرسال' : 'Failed to send');
+    } finally {
+      setSending(false);
+    }
+  };
 
   const styles = {
     container: { maxWidth: '1200px', margin: '0 auto' },
@@ -26,7 +76,8 @@ const AnalyticsMain = ({ language = 'ar' }) => {
       borderRadius: moeBorderRadius.md,
       fontSize: '14px',
       fontWeight: 600,
-      cursor: 'pointer',
+      cursor: sending ? 'not-allowed' : 'pointer',
+      opacity: sending ? 0.6 : 1,
     },
     card: {
       background: 'white',
@@ -43,8 +94,15 @@ const AnalyticsMain = ({ language = 'ar' }) => {
         <h1 style={styles.title}>
           {isArabic ? 'التحليلات والتقارير' : 'Analytics & Reports'}
         </h1>
-        <button style={styles.reportBtn}>
-          📊 {isArabic ? 'إنشاء تقرير' : 'Generate Report'}
+        <button 
+          style={styles.reportBtn}
+          onClick={handleGenerateReport}
+          disabled={sending}
+        >
+          📊 {sending 
+            ? (isArabic ? 'جاري الإرسال...' : 'Sending...') 
+            : (isArabic ? 'إنشاء تقرير' : 'Generate Report')
+          }
         </button>
       </div>
 
@@ -68,6 +126,25 @@ const AnalyticsModule = ({ language }) => {
       <Route path="student/:studentId" element={<AnalyticsMain language={language} />} />
     </Routes>
   );
+};
+
+const sendToN8n = async (data) => {
+  try {
+    const webhookUrl = 'http://localhost:5678/webhook-test/MOE-test';
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) throw new Error('Failed to send data to n8n');
+    return await response.json();
+  } catch (error) {
+    console.error('Error sending to n8n:', error);
+    throw error;
+  }
 };
 
 export default AnalyticsModule;
