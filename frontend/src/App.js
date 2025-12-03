@@ -1,122 +1,57 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+// Layout
+import { Layout } from './components/Layout';
+
+// Pages
+import Dashboard from './pages/Dashboard';
+import CurriculumModule from './pages/curriculum/CurriculumModule';
+import LecturesModule from './pages/lectures/LecturesModule';
+import HomeworkModule from './pages/homework/HomeworkModule';
+import AnalyticsModule from './pages/analytics/AnalyticsModule';
+
+// Global Styles
+import './App.css';
+
+/**
+ * MAIN APP - ENTRY POINT
+ * ⚠️ SHARED FILE - Coordinate with team before modifying
+ */
 
 function App() {
-  const [text, setText] = useState('');
-  const [response, setResponse] = useState('');
-  const [loading, setLoading] = useState(false);
-  
-  // Direct Groq API call
-  const testGroqDirect = async () => {
-    setLoading(true);
-    try {
-      const result = await axios.post(
-        'https://api.groq.com/openai/v1/chat/completions',
-        {
-          model: 'openai/gpt-oss-120b',
-          messages: [{ role: 'user', content: text }],
-          max_tokens: 200
-        },
-        {
-          headers: {  
-            'Authorization': `Bearer ${process.env.REACT_APP_GROQ_API_KEY}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      setResponse(result.data.choices[0].message.content);
-    } catch (error) {
-      console.error('Error:', error);
-      setResponse('Error: ' + error.message);
-    }
-    setLoading(false);
-  };
-  
-  // n8n webhook call
-  const testN8nWebhook = async () => {
-    setLoading(true);
-    try {
-      const result = await axios.post(
-        'http://localhost:5678/webhook/test-groq',
-        {
-          text: text
-        }
-      );
-      setResponse(result.data.choices[0].message.content);
-    } catch (error) {
-      console.error('Error:', error);
-      setResponse('Error: Check if n8n workflow is active');
-    }
-    setLoading(false);
-  };
-
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
-      <h2>Teacher Assistant Test</h2>
-      
-      <div style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Ask something... e.g., 'Explain photosynthesis for grade 5'"
-          style={{ 
-            width: '400px', 
-            padding: '10px', 
-            fontSize: '16px',
-            marginRight: '10px'
-          }}
-        />
-        
-        <button 
-          onClick={testGroqDirect}
-          disabled={loading || !text}
-          style={{ 
-            padding: '10px 20px', 
-            fontSize: '16px',
-            marginRight: '10px',
-            backgroundColor: '#4CAF50',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Test Groq Direct
-        </button>
-        
-        <button 
-          onClick={testN8nWebhook}
-          disabled={loading || !text}
-          style={{ 
-            padding: '10px 20px', 
-            fontSize: '16px',
-            backgroundColor: '#2196F3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer'
-          }}
-        >
-          Test via n8n
-        </button>
-      </div>
-      
-      {loading && <p>Loading...</p>}
-      
-      {response && (
-        <div style={{ 
-          marginTop: '20px', 
-          padding: '15px', 
-          backgroundColor: '#f0f0f0',
-          borderRadius: '4px'
-        }}>
-          <h3>Response:</h3>
-          <p>{response}</p>
-        </div>
-      )}
-    </div>
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          {/* Dashboard - Shared Entry Point */}
+          <Route path="/" element={<Dashboard />} />
+          
+          {/* CURRICULUM - Owner: curriculum branch */}
+          <Route path="/curriculum/*" element={<CurriculumModule />} />
+          
+          {/* LECTURES - Owner: lectures branch */}
+          <Route path="/lectures/*" element={<LecturesModule />} />
+          
+          {/* HOMEWORK - Owner: homework branch */}
+          <Route path="/homework/*" element={<HomeworkModule />} />
+          
+          {/* ANALYTICS - Owner: analytics branch */}
+          <Route path="/analytics/*" element={<AnalyticsModule />} />
+          
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
   );
 }
+
+const NotFound = () => (
+  <div style={{ textAlign: 'center', padding: '48px' }}>
+    <h1 style={{ fontSize: '48px' }}>404</h1>
+    <p>الصفحة غير موجودة</p>
+  </div>
+);
 
 export default App;
