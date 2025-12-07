@@ -1,0 +1,195 @@
+{
+  "name": "write on docs",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "Doc_ID"
+            },
+            {
+              "name": "content"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        112
+      ],
+      "id": "e4052092-b3ae-43db-af32-c0431f6f3dca",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "const documentId = $input.first().json.Doc_ID;\nconst markdownContent = $input.first().json.content;\n\nfunction markdownToGoogleDocsRequests(markdown) {\n  const requests = [];\n  let currentIndex = 1;\n  \n  const lines = markdown.split('\\n');\n  \n  for (let line of lines) {\n    if (line.trim() === '') {\n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: '\\n'\n        }\n      });\n      currentIndex += 1;\n      continue;\n    }\n    \n    // Headers\n    const headerMatch = line.match(/^(#{1,6})\\s+(.+)$/);\n    if (headerMatch) {\n      const level = headerMatch[1].length;\n      const text = headerMatch[2] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        updateParagraphStyle: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length - 1\n          },\n          paragraphStyle: {\n            namedStyleType: `HEADING_${level}`\n          },\n          fields: 'namedStyleType'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n    // Bullet lists\n    const bulletMatch = line.match(/^[\\-\\*]\\s+(.+)$/);\n    if (bulletMatch) {\n      const text = bulletMatch[1] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        createParagraphBullets: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length\n          },\n          bulletPreset: 'BULLET_DISC_CIRCLE_SQUARE'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n    // Numbered lists\n    const numberedMatch = line.match(/^\\d+\\.\\s+(.+)$/);\n    if (numberedMatch) {\n      const text = numberedMatch[1] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        createParagraphBullets: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length\n          },\n          bulletPreset: 'NUMBERED_DECIMAL_ALPHA_ROMAN'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n// Process inline formatting\nlet processedText = line;\nconst formatting = [];\nconst allMatches = [];\n\n// Bold (improved regex to handle special characters and short text)\nlet regex = /\\*\\*((?:[^\\*\\n]|\\*[^\\\\*\\n])+?)\\*\\*/g;\nlet match;\nwhile ((match = regex.exec(line)) !== null) {\n  const content = match[1].trim(); // Trim to avoid empty or whitespace-only content\n  if (content.length > 0) { // Only process non-empty content\n    allMatches.push({\n      index: match.index,\n      length: match[0].length,\n      content: content,\n      type: 'bold'\n    });\n  }\n}\n\n// Italic\nregex = /(?<!\\*)\\*(?!\\*)([^\\*\\n]+?)(?<!\\*)\\*(?!\\*)|(?<!_)_(?!_)([^\\_\\n]+?)(?<!_)_(?!_)/g;\nwhile ((match = regex.exec(line)) !== null) {\n  const content = (match[1] || match[3]).trim();\n  if (content.length > 0) {\n    allMatches.push({\n      index: match.index,\n      length: match[0].length,\n      content: content,\n      type: 'italic'\n    });\n  }\n}\n\n// Code\nregex = /`([^\\`\\n]+?)`/g;\nwhile ((match = regex.exec(line)) !== null) {\n  const content = match[1].trim();\n  if (content.length > 0) {\n    allMatches.push({\n      index: match.index,\n      length: match[0].length,\n      content: content,\n      type: 'code'\n    });\n  }\n}\n\n// Links\nregex = /\\[([^\\]\\n]+?)\\]\\(([^\\)\\n]+?)\\)/g;\nwhile ((match = regex.exec(line)) !== null) {\n  const content = match[1].trim();\n  if (content.length > 0) {\n    allMatches.push({\n      index: match.index,\n      length: match[0].length,\n      content: content,\n      url: match[2],\n      type: 'link'\n    });\n  }\n}\n\n// Sort matches by index and filter out overlapping matches\nallMatches.sort((a, b) => a.index - b.index);\nconst filteredMatches = [];\nlet lastEnd = -1;\nfor (const m of allMatches) {\n  if (m.index >= lastEnd) {\n    filteredMatches.push(m);\n    lastEnd = m.index + m.length;\n  }\n}\n\n// Replace Markdown syntax with content\nlet offset = 0;\nfilteredMatches.forEach(m => {\n  const adjustedStart = m.index - offset;\n  processedText = processedText.substring(0, adjustedStart) + \n                  m.content + \n                  processedText.substring(adjustedStart + m.length);\n  formatting.push({\n    start: currentIndex + adjustedStart,\n    end: currentIndex + adjustedStart + m.content.length,\n    type: m.type,\n    url: m.url\n  });\n  offset += m.length - m.content.length;\n});\n\n// Insert the processed text\nrequests.push({\n  insertText: {\n    location: { index: currentIndex },\n    text: processedText + '\\n'\n  }\n});\n\n// Apply formatting\nformatting.forEach(fmt => {\n  // Ensure range is valid (endIndex > startIndex)\n  if (fmt.end > fmt.start) {\n    if (fmt.type === 'bold') {\n      requests.push({\n        updateTextStyle: {\n          range: { startIndex: fmt.start, endIndex: fmt.end },\n          textStyle: { bold: true },\n          fields: 'bold'\n        }\n      });\n    } else if (fmt.type === 'italic') {\n      requests.push({\n        updateTextStyle: {\n          range: { startIndex: fmt.start, endIndex: fmt.end },\n          textStyle: { italic: true },\n          fields: 'italic'\n        }\n      });\n    } else if (fmt.type === 'code') {\n      requests.push({\n        updateTextStyle: {\n          range: { startIndex: fmt.start, endIndex: fmt.end },\n          textStyle: {\n            fontFamily: 'Courier New',\n            fontSize: { magnitude: 10, unit: 'PT' },\n            backgroundColor: {\n              color: { rgbColor: { red: 0.95, green: 0.95, blue: 0.95 } }\n            }\n          },\n          fields: 'fontFamily,fontSize,backgroundColor'\n        }\n      });\n    } else if (fmt.type === 'link') {\n      requests.push({\n        updateTextStyle: {\n          range: { startIndex: fmt.start, endIndex: fmt.end },\n          textStyle: {\n            link: { url: fmt.url },\n            foregroundColor: {\n              color: { rgbColor: { red: 0.06, green: 0.46, blue: 0.93 } }\n            },\n            underline: true\n          },\n          fields: 'link,foregroundColor,underline'\n        }\n      });\n    }\n  }\n});\n\ncurrentIndex += processedText.length + 1;\n  }\n  \n  return requests;\n}\n\n// Output for HTTP Request node\nreturn {\n  json: {\n    body: {\n      requests: markdownToGoogleDocsRequests(markdownContent)\n    },\n    documentId: documentId,\n    url: `https://docs.googleapis.com/v1/documents/${documentId}:batchUpdate`\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -224
+      ],
+      "id": "a2952907-7517-4721-af2a-c5a8d6b27e8d",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": false,
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://docs.googleapis.com/v1/documents/{{ $('When Executed by Another Workflow').item.json.Doc_ID }}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleDriveOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json.body}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        112
+      ],
+      "id": "963deee5-cf0b-448d-8264-10cc887da8bb",
+      "name": "HTTP Request",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "9G2O7oLVjrJSyDHG",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Converts Markdown into fixed Google Docs format",
+        "height": 336,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        752,
+        -16
+      ],
+      "id": "92843c06-c742-4753-88be-38e6bb2a725e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Runs when called by other workflows",
+        "height": 336,
+        "width": 336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        416,
+        -16
+      ],
+      "id": "8ff84764-a446-4f91-8d01-7c6acf0f0caa",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Uploads data into Google docs",
+        "height": 336,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1088,
+        -16
+      ],
+      "id": "4c201e83-54ba-4360-9529-8f7c84d1c754",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## INPUTS\n- Document ID\n- Document content",
+        "height": 112,
+        "width": 208,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        -128
+      ],
+      "id": "510911f9-c1dc-4211-969d-fde2be0e7888",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const documentId = $input.first().json.Doc_ID;\nconst markdownContent = $input.first().json.content;\n\nfunction markdownToGoogleDocsRequests(markdown) {\n  const requests = [];\n  let currentIndex = 1;\n  \n  const lines = markdown.split('\\n');\n  \n  for (let line of lines) {\n    if (line.trim() === '') {\n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: '\\n'\n        }\n      });\n      currentIndex += 1;\n      continue;\n    }\n    \n    // Headers\n    const headerMatch = line.match(/^(#{1,6})\\s+(.+)$/);\n    if (headerMatch) {\n      const level = headerMatch[1].length;\n      const text = headerMatch[2] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        updateParagraphStyle: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length - 1\n          },\n          paragraphStyle: {\n            namedStyleType: `HEADING_${level}`\n          },\n          fields: 'namedStyleType'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n    // Bullet lists\n    const bulletMatch = line.match(/^[\\-\\*]\\s+(.+)$/);\n    if (bulletMatch) {\n      const text = bulletMatch[1] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        createParagraphBullets: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length\n          },\n          bulletPreset: 'BULLET_DISC_CIRCLE_SQUARE'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n    // Numbered lists\n    const numberedMatch = line.match(/^\\d+\\.\\s+(.+)$/);\n    if (numberedMatch) {\n      const text = numberedMatch[1] + '\\n';\n      \n      requests.push({\n        insertText: {\n          location: { index: currentIndex },\n          text: text\n        }\n      });\n      \n      requests.push({\n        createParagraphBullets: {\n          range: {\n            startIndex: currentIndex,\n            endIndex: currentIndex + text.length\n          },\n          bulletPreset: 'NUMBERED_DECIMAL_ALPHA_ROMAN'\n        }\n      });\n      \n      currentIndex += text.length;\n      continue;\n    }\n    \n    // Process inline formatting\n    let processedText = line;\n    const formatting = [];\n    const allMatches = [];\n\n    // Bold (improved regex to handle special characters and short text)\n    let regex = /\\*\\*((?:[^\\*\\n]|\\*[^\\*\\n])+?)\\*\\*/g;\n    let match;\n    while ((match = regex.exec(line)) !== null) {\n      const content = match[1].trim(); // Trim to avoid empty or whitespace-only content\n      if (content.length > 0) { // Only process non-empty content\n        allMatches.push({\n          index: match.index,\n          length: match[0].length,\n          content: content,\n          type: 'bold'\n        });\n      }\n    }\n\n    // Italic\n    regex = /(?<!\\*)\\*(?!\\*)([^\\*\\n]+?)(?<!\\*)\\*(?!\\*)|(?<!_)_(?!_)([^\\_\\n]+?)(?<!_)_(?!_)/g;\n    while ((match = regex.exec(line)) !== null) {\n      const content = (match[1] || match[3]).trim();\n      if (content.length > 0) {\n        allMatches.push({\n          index: match.index,\n          length: match[0].length,\n          content: content,\n          type: 'italic'\n        });\n      }\n    }\n\n    // Code\n    regex = /`([^\\`\\n]+?)`/g;\n    while ((match = regex.exec(line)) !== null) {\n      const content = match[1].trim();\n      if (content.length > 0) {\n        allMatches.push({\n          index: match.index,\n          length: match[0].length,\n          content: content,\n          type: 'code'\n        });\n      }\n    }\n\n    // Links\n    regex = /\\[([^\\]\\n]+?)\\]\\(([^\\)\\n]+?)\\)/g;\n    while ((match = regex.exec(line)) !== null) {\n      const content = match[1].trim();\n      if (content.length > 0) {\n        allMatches.push({\n          index: match.index,\n          length: match[0].length,\n          content: content,\n          url: match[2],\n          type: 'link'\n        });\n      }\n    }\n\n    // Sort matches by index and filter out overlapping matches\n    allMatches.sort((a, b) => a.index - b.index);\n    const filteredMatches = [];\n    let lastEnd = -1;\n    for (const m of allMatches) {\n      if (m.index >= lastEnd) {\n        filteredMatches.push(m);\n        lastEnd = m.index + m.length;\n      }\n    }\n\n    // Replace Markdown syntax with content\n    let offset = 0;\n    filteredMatches.forEach(m => {\n      const adjustedStart = m.index - offset;\n      processedText = processedText.substring(0, adjustedStart) + \n                      m.content + \n                      processedText.substring(adjustedStart + m.length);\n      formatting.push({\n        start: currentIndex + adjustedStart,\n        end: currentIndex + adjustedStart + m.content.length,\n        type: m.type,\n        url: m.url\n      });\n      offset += m.length - m.content.length;\n    });\n\n    // Insert the processed text\n    requests.push({\n      insertText: {\n        location: { index: currentIndex },\n        text: processedText + '\\n'\n      }\n    });\n\n    // Apply formatting\n    formatting.forEach(fmt => {\n      // Ensure range is valid (endIndex > startIndex)\n      if (fmt.end > fmt.start) {\n        if (fmt.type === 'bold') {\n          requests.push({\n            updateTextStyle: {\n              range: { startIndex: fmt.start, endIndex: fmt.end },\n              textStyle: { bold: true },\n              fields: 'bold'\n            }\n          });\n        } else if (fmt.type === 'italic') {\n          requests.push({\n            updateTextStyle: {\n              range: { startIndex: fmt.start, endIndex: fmt.end },\n              textStyle: { italic: true },\n              fields: 'italic'\n            }\n          });\n        } else if (fmt.type === 'code') {\n          requests.push({\n            updateTextStyle: {\n              range: { startIndex: fmt.start, endIndex: fmt.end },\n              textStyle: {\n                weightedFontFamily: {\n                  fontFamily: 'Courier New',\n                  weight: 400\n                },\n                fontSize: { magnitude: 10, unit: 'PT' },\n                backgroundColor: {\n                  color: { rgbColor: { red: 0.95, green: 0.95, blue: 0.95 } }\n                }\n              },\n              fields: 'weightedFontFamily,fontSize,backgroundColor'\n            }\n          });\n        } else if (fmt.type === 'link') {\n          requests.push({\n            updateTextStyle: {\n              range: { startIndex: fmt.start, endIndex: fmt.end },\n              textStyle: {\n                link: { url: fmt.url },\n                foregroundColor: {\n                  color: { rgbColor: { red: 0.06, green: 0.46, blue: 0.93 } }\n                },\n                underline: true\n              },\n              fields: 'link,foregroundColor,underline'\n            }\n          });\n        }\n      }\n    });\n\n    currentIndex += processedText.length + 1;\n  }\n  \n  return requests;\n}\n\n// Output for HTTP Request node\nreturn {\n  json: {\n    body: {\n      requests: markdownToGoogleDocsRequests(markdownContent)\n    },\n    documentId: documentId,\n    url: `https://docs.googleapis.com/v1/documents/${documentId}:batchUpdate`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        864,
+        112
+      ],
+      "id": "b893e883-bcd3-4fda-8855-2d6e331907f1",
+      "name": "Code in JavaScript1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ade2532f-8d9f-4e75-b85b-e72d32846d88",
+  "meta": {
+    "instanceId": "1cf2b5bf4318a23a63d29974a6dba88a1ee4ca1760f440473397926025aaad84"
+  },
+  "id": "FHj3i5NGLrBhKUV5",
+  "tags": []
+}

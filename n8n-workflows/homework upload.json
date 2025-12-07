@@ -1,0 +1,386 @@
+{
+  "name": "homework upload",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1232,
+        -336
+      ],
+      "id": "e49057b8-20da-4da7-8c93-4744814502c2",
+      "name": "When Executed by Another Workflow",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "775cbecb-3f8f-46cf-b491-5c8910008622",
+              "name": "data",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "f4768a9d-9aad-4e61-8d27-deee07a85871",
+              "name": "homework_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.body.homework_id }}",
+              "type": "string"
+            },
+            {
+              "id": "db6b8a42-129e-469d-bf38-2bfae40135d4",
+              "name": "session_id",
+              "value": "={{ $('When Executed by Another Workflow').item.json.body.session_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -544
+      ],
+      "id": "da62920f-88da-487d-ba5d-7f8efae89a57",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "jsonMode": "expressionData",
+        "jsonData": "={{ $json.data }}",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "session_id",
+                "value": "={{ $json.session_id }}"
+              },
+              {
+                "name": "homework_id",
+                "value": "={{ $json.homework_id }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -320
+      ],
+      "id": "6d3f2e40-2bd9-4ef9-8790-f5226f2eebe5",
+      "name": "Default Data Loader1"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "homeworks",
+          "mode": "list",
+          "cachedResultName": "homeworks"
+        },
+        "options": {
+          "clearNamespace": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        -544
+      ],
+      "id": "33a992a4-efd6-4e0c-a637-c5a3c6551a54",
+      "name": "Pinecone Vector Store1",
+      "credentials": {
+        "pineconeApi": {
+          "id": "zsHMTXV1Oo8Y0PVK",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.pageContent }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notExists",
+                      "singleValue": true
+                    },
+                    "id": "41677a87-d61c-4538-baf1-e859f5c24816"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Failed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6511c1b8-4143-4c37-8228-dc9c404e0e84",
+                    "leftValue": "={{ $json.pageContent }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Done!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        80,
+        -544
+      ],
+      "id": "36d35bd3-bcb1-4c70-ac9d-ccf753c3c132",
+      "name": "Switch1",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "errorMessage": "Error at \"Vector store\" - no data was loaded"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -640
+      ],
+      "id": "8ba6caa3-4f5a-4c03-a8ff-546f27645937",
+      "name": "Vector Error1"
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterTokenSplitter",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -112
+      ],
+      "id": "cc768f1f-68cd-4712-bd9e-aef98275fef6",
+      "name": "Token Splitter1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "file",
+        "options": {
+          "keepSource": "json"
+        }
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -912,
+        -448
+      ],
+      "id": "a2d58e8a-a1d6-427b-9eee-298ffefdb591",
+      "name": "Extract from File1",
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Error converting text to JSON"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -352
+      ],
+      "id": "b8771c65-d2af-4f63-912f-f71f7e1bb849",
+      "name": "Stop and Error5"
+    },
+    {
+      "parameters": {
+        "errorMessage": "=Error converting base64 file content into binary.\nerror: {{ $json.error }}"
+      },
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        -1008,
+        -240
+      ],
+      "id": "428b0e6b-eda7-49e0-99c4-5499c1a06c20",
+      "name": "Stop and Error"
+    },
+    {
+      "parameters": {
+        "modelName": "Omartificial-Intelligence-Space/Arabic-Triplet-Matryoshka-V2",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        -288
+      ],
+      "id": "eb2cde15-4dab-4680-b238-2a9e051efb1a",
+      "name": "Embeddings HuggingFace Inference1",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "7BN0fyv0oDunRzEU",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader1": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store1": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Vector Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Token Splitter1": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader1",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stop and Error5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings HuggingFace Inference1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store1",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "bd32da55-f738-4151-8d87-932e160e1211",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1cf2b5bf4318a23a63d29974a6dba88a1ee4ca1760f440473397926025aaad84"
+  },
+  "id": "eBLOhYU49Qsrx8l3",
+  "tags": []
+}
