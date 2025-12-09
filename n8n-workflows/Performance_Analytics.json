@@ -1,0 +1,296 @@
+{
+  "updatedAt": "2025-12-04T08:45:03.000Z",
+  "createdAt": "2025-12-04T04:53:06.625Z",
+  "id": "ZViSyDjHHkvLzps6",
+  "name": "Performance Analytics",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "teacher-analytics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        -320
+      ],
+      "id": "e39f14fe-fc9e-4f89-af63-22c3f88cbf8d",
+      "name": "Webhook",
+      "webhookId": "8bb21a1f-e981-44b0-957d-27d0bcf59888"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "POST, OPTIONS, GET"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        928,
+        -320
+      ],
+      "id": "9724e717-ce54-48f5-b24c-cf625de91851",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "binaryPropertyName": "=file",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        -320
+      ],
+      "id": "aaf18113-55c6-4872-9bde-858298362628",
+      "name": "Extract from File",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -320
+      ],
+      "id": "8db906b8-c781-409f-894a-faa295c1c6bd",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "=You are an expert educational data analyst specializing in student performance analysis for Saudi schools.\n\nYou will receive CSV data containing student information with the following columns:\n- Student_ID, Student_Name, Age, Grade\n- Subject scores: Math_Score, Science_Score, Arabic_Score, English_Score\n- Performance metrics: Attendance_Percentage, Homework_Completion, Participation_Score, Behavior_Score\n- Exam scores: Exam1_Score, Exam2_Score, Exam3_Score, Final_Exam_Score\n- Attendance issues: Absences, Late_Arrivals\n- Notes: Teacher observations\n\nYour task is to analyze this data and provide:\n\n1. **Overall Performance Summary:**\n   - Calculate class averages for each subject\n   - Identify performance trends\n   - Calculate overall class statistics\n\n2. **Student Strengths (Top 5):**\n   - What are the class's strongest areas?\n   - Which subjects show highest performance?\n   - What positive patterns do you observe?\n\n3. **Student Weaknesses (Top 5):**\n   - What areas need improvement?\n   - Which students are struggling the most?\n   - What concerning patterns do you observe?\n\n4. **At-Risk Students:**\n   - Identify students with averages below 60%\n   - Students with high absences (>10)\n   - Students with declining exam scores\n\n5. **Top Performers:**\n   - Students with averages above 90%\n   - Students with excellent attendance and participation\n\n6. **Subject-Specific Analysis:**\n   - Which subject has the lowest class average?\n   - Which subject shows the most variation?\n   - Correlation between attendance and performance\n\n7. **Data for Visualizations:**\n   - Provide aggregated data suitable for charts\n   - Weekly/monthly performance trends if available\n   - Subject comparison data\n   - Performance distribution data\n\nFormat your response as a detailed analytical report with specific numbers, percentages, and student names where relevant."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        160,
+        -320
+      ],
+      "id": "79e2ef1e-0f8d-4240-9210-040558e9c241",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a data formatting specialist. Your job is to transform educational analysis into a structured JSON format for a web application.\n\nYou will receive a detailed analytical report about student performance. Transform this into the following EXACT JSON structure:\n\n{\n  \"charts\": {\n    \"lineData\": [\n      // Performance over time (if available) or exam progression\n      // Array of objects with: { \"name\": \"Week/Exam name\", \"value\": number }\n      // Example: { \"name\": \"Exam 1\", \"value\": 75 }\n      // Must have at least 4 data points\n    ],\n    \"barData\": [\n      // Subject comparison - class averages\n      // Array of objects with: { \"name\": \"Subject name in Arabic\", \"value\": number }\n      // Example: { \"name\": \"الرياضيات\", \"value\": 75 }\n      // Must include: Math, Science, Arabic, English\n    ],\n    \"pieData\": [\n      // Student performance distribution\n      // Array of objects with: { \"name\": \"Category in Arabic\", \"value\": number (count of students) }\n      // Categories: \"ممتاز (90-100)\", \"جيد جداً (80-89)\", \"جيد (70-79)\", \"مقبول (60-69)\", \"ضعيف (<60)\"\n    ]\n  },\n  \"strengths\": [\n    // Array of 3-5 strings describing class strengths\n    // Be specific with numbers and percentages\n    // Write in Arabic\n    // Example: \"أداء متميز في اللغة العربية بمتوسط 88%\"\n  ],\n  \"weaknesses\": [\n    // Array of 3-5 strings describing areas needing improvement\n    // Be specific with numbers and student counts\n    // Write in Arabic\n    // Example: \"5 طلاب يحتاجون إلى دعم عاجل في الرياضيات\"\n  ],\n  \"recommendations\": [\n    // Array of 4-6 actionable recommendations for teachers\n    // Be specific and practical\n    // Write in Arabic\n    // Example: \"تنظيم جلسات تقوية للرياضيات 3 مرات أسبوعياً للطلاب الذين يحصلون على أقل من 60%\"\n  ]\n}\n\nCRITICAL RULES:\n1. Return ONLY valid JSON - no markdown, no explanations, no extra text\n2. All text in Arabic except JSON keys\n3. All numbers must be actual numbers, not strings\n4. lineData, barData, and pieData must be arrays with objects\n5. Each data point must have exactly \"name\" and \"value\" properties\n6. Ensure the JSON is properly formatted and parseable"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        448,
+        -320
+      ],
+      "id": "9e474923-2827-4105-ba13-dbdd74593e80",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output;\n// Convert to string if needed\nraw = String(raw).trim();\n\n// Remove ```json and ``` markers\nraw = raw.replace(/```json/i, \"\").replace(/```/g, \"\").trim();\n\n// Now parse the clean JSON\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  return [{ json: { error: \"Invalid JSON after cleaning\", raw } }];\n}\n\n// Return parsed JSON\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -320
+      ],
+      "id": "0fa0aa09-27b4-42c9-98a4-4a6a40f5e4de",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        96,
+        -112
+      ],
+      "id": "bd68b31c-a4f5-461d-99c6-f17f88f9b39b",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "39yaqKuLiO92JQW3",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        368,
+        -64
+      ],
+      "id": "a44111a2-2703-4272-abe0-1cf36cd18205",
+      "name": "Groq Chat Model1",
+      "credentials": {
+        "groqApi": {
+          "id": "39yaqKuLiO92JQW3",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "91b02e04-a261-42ab-a01c-18593d11727e",
+  "activeVersionId": null,
+  "versionCounter": 30,
+  "triggerCount": 1,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-12-04T04:53:06.636Z",
+      "createdAt": "2025-12-04T04:53:06.636Z",
+      "role": "workflow:owner",
+      "workflowId": "ZViSyDjHHkvLzps6",
+      "projectId": "VVYuYvi2YmhR1gks",
+      "project": {
+        "updatedAt": "2025-12-03T10:45:59.799Z",
+        "createdAt": "2025-12-03T08:25:44.389Z",
+        "id": "VVYuYvi2YmhR1gks",
+        "name": "Abdullah Balqasim <abod098.a.d@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

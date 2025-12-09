@@ -1,0 +1,1311 @@
+{
+  "updatedAt": "2025-12-03T10:59:39.314Z",
+  "createdAt": "2025-12-03T10:59:39.314Z",
+  "id": "SK2ABaAbUl8x3xN2",
+  "name": "Teacher Assistant-v1",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "MOE-test",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -112,
+        896
+      ],
+      "id": "7775eec2-b470-4bc2-9eb5-76917b9757bb",
+      "name": "Webhook",
+      "webhookId": "f8739d25-906f-4b39-985c-297ac0e58f9d"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        4192,
+        736
+      ],
+      "id": "85d9154c-0eda-4355-b03c-cce73040e79e",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Abdullah",
+        "height": 784,
+        "width": 2000,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        1472
+      ],
+      "typeVersion": 1,
+      "id": "a0d368e0-09af-4bbb-8c58-27ffb860bf21",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.type }}",
+                    "rightValue": "content_generation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "44eaa5ae-a48c-4f75-aa13-a1c831216abc"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Nora"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "0bd88a55-4157-444b-99ac-7a0645ea99c2",
+                    "leftValue": "={{ $json.body.type }}",
+                    "rightValue": "exam_create",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Hashim"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "34a69d46-38de-4937-9f03-eb1b0a2f4155",
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "chat",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Abdullah"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": 2
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        304,
+        896
+      ],
+      "id": "eb81f6ed-1163-4804-879d-40891ced6368",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "content": "## Hashim",
+        "height": 784,
+        "width": 2000,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1104,
+        672
+      ],
+      "typeVersion": 1,
+      "id": "505640d7-204b-4c07-88b1-253d4f8e6950",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Convert the \"quizData\" format from AI output to the expected front-end structure\n\nconst input = $input.first().json.quizData; // Get the quizData array\nconst converted = input.map(q => {\n  const questionText = Object.keys(q.question)[0];\n  const optionsObj = q.question[questionText];\n  const optionsArray = Object.values(optionsObj);\n  const correctLetter = q.correct_answer.trim();\n  const correctIndex = \"ABCD\".indexOf(correctLetter);\n\n  return {\n    question: questionText,\n    options: optionsArray,\n    correct: correctIndex,\n    explanation: \"\"\n  };\n});\n\nreturn [\n  {\n    json: {\n      message: `تم إنشاء اختبار مكون من ${converted.length} أسئلة 🎯 سيتم فتح الاختبار الآن...`,\n      output: converted\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2512,
+        1888
+      ],
+      "id": "f00ae507-e4f3-45f8-81bd-d6e65a2d271b",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "content": "## Noura",
+        "height": 1344,
+        "width": 2368,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        928,
+        -688
+      ],
+      "typeVersion": 1,
+      "id": "9787ed96-f54c-472d-8319-9c2e0abc9d6e",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate input data\nconst body = $input.item.json.body;\n\nreturn {\n  json: {\n    contentType: body.contentType || 'educational',\n    subject: body.subject || '',\n    topic: body.topic || '',\n    grade: body.grade || '',\n    timestamp: body.timestamp || new Date().toISOString()\n  }\n};"
+      },
+      "id": "fc20226f-563c-4f6d-b681-d41151059be4",
+      "name": "Extract Content Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate input fields\nconst data = $input.item.json;\n\nconst required = ['contentType', 'subject', 'topic', 'grade'];\nconst missing = required.filter(field => !data[field]);\n\nif (missing.length > 0) {\n  return {\n    json: {\n      valid: false,\n      error: `Missing required fields: ${missing.join(', ')}`,\n      ...data\n    }\n  };\n}\n\nreturn {\n  json: {\n    valid: true,\n    ...data\n  }\n};"
+      },
+      "id": "31a26719-3266-45a7-93f0-4c378b66fd94",
+      "name": "Validate Input1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.valid }}",
+                    "rightValue": true,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "valid"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.valid }}",
+                    "rightValue": false,
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "false"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "invalid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "297e008a-ad85-4190-a380-094248232863",
+      "name": "Check Validation1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1424,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "educational",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bb8754ac-65b4-4978-99d4-f898aeb71b9d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "educational"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "presentation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3692b7fa-9f99-4bae-848f-7a823ee39134"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "presentation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.contentType }}",
+                    "rightValue": "worksheet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "c428ac9b-3c61-4035-b5ee-3c1d6002f8ff"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "worksheet"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "79848ea6-c5ea-4729-a7a7-e8830a0f2a9e",
+      "name": "Switch Content Type1",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1616,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare prompt for educational content AI Agent\nconst data = $input.item.json;\n\nconst prompt = `\n\nالمعلومات:\n- المادة: ${data.subject}\n- الموضوع: ${data.topic}\n- المستوى الدراسي: ${data.grade}\n\nأنت خبير تعليمي متخصص في إنشاء محتوى عربي احترافي. أنشئ محتوى تعليمياً شاملاً ومنظماً.\n\n⚠️ اتبع الهيكل التالي بدقة:\n\n📋 [المادة] | [الموضوع] | [المستوى]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📚 المقدمة\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nفقرتان: تعريف + أهمية - 3 إلى 4 أسطر لكل فقرة.\n\n🎯 الأهداف التعليمية\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n- هدف 1\n- هدف 2\n- هدف 3\n- هدف 4\n\n📖 المفاهيم الأساسية\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🔹 المفهوم الأول  \nتعريف مختصر (3 إلى 4 أسطر)  \nالنقاط الرئيسية:  \n• نقطة 1  \n• نقطة 2  \n• نقطة 3  \n\n🔹 المفهوم الثاني  \nتعريف مختصر (3 إلى 4 أسطر)  \nالنقاط الرئيسية:  \n• نقطة 1  \n• نقطة 2  \n• نقطة 3  \n\n🔹 المفهوم الثالث  \nتعريف مختصر (3 إلى 4 أسطر)  \nالنقاط الرئيسية:  \n• نقطة 1  \n• نقطة 2  \n• نقطة 3  \n\n💡 أمثلة تطبيقية\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🌟 مثال 1: العنوان  \nموقف من الحياة (سطران)  \nالتطبيق (سطران)  \nالنتيجة (سطر واحد)  \n\n🌟 مثال 2: العنوان  \nموقف من الحياة (سطران)  \nالتطبيق (سطران)  \nالنتيجة (سطر واحد)  \n\n🌟 مثال 3: العنوان  \nموقف من الحياة (سطران)  \nالتطبيق (سطران)  \nالنتيجة (سطر واحد)  \n\n✏️ تمارين\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⭐ بسيط:  \n1. تمرين  \n2. تمرين  \n\n⭐⭐ متوسط:  \n3. تمرين  \n4. تمرين  \n\n⭐⭐⭐ متقدم:  \n5. تمرين  \n6. تمرين  \n\n📋 ملخص\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n✓ نقطة 1  \n✓ نقطة 2  \n✓ نقطة 3  \n✓ نقطة 4  \n\n❓ تقييم + إجابات\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1. سؤال اختيار من متعدد - الإجابة: X  \n2. سؤال اختيار من متعدد - الإجابة: X  \n3. صح أو خطأ - الإجابة: X  \n4. صح أو خطأ - الإجابة: X  \n5. سؤال مقالي - الإجابة: نموذجية  \n6. سؤال مقالي - الإجابة: نموذجية  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;\n\nreturn {\n  json: {\n    chatInput: prompt,\n    originalData: data\n  }\n};"
+      },
+      "id": "c0986762-8e44-4508-b1d5-b81531d4a69e",
+      "name": "Prepare Educational Prompt1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        -288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare prompt for presentation AI Agent\nconst data = $input.item.json;\n\nconst prompt = `\n\nالمعلومات:\n- المادة: ${data.subject}\n- الموضوع: ${data.topic}\n- المستوى الدراسي: ${data.grade}\n\n\nأنت خبير تعليمي محترف في تصميم العروض التقديمية التعليمية باللغة العربية.  \nمهمتك هي إنشاء عرض PowerPoint تعليمي كامل بالمحتوى الحقيقي، مكوّن من شروحات واضحة وأمثلة تطبيقية وأسئلة تفاعلية داخل العرض نفسه.  \nيجب أن يكون العرض منظمًا، غنيًّا بالمعلومات، ومناسبًا للمستوى الدراسي المحدد، باستخدام لغة عربية فصيحة وسهلة الفهم.\n\nاتبع بدقة الهيكل التالي في إعداد العرض:\n\n🎓 [المادة] | [الموضوع] | [المستوى الدراسي]\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 **المقدمة العامة**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nاكتب مقدمة واقعية من 4 إلى 6 أسطر تشرح فكرة الدرس،  \nأهميته في حياة الطالب أو تطبيقاته اليومية، وتشجّع على التعلم الذاتي والاستكشاف.\n\n🎯 **الأهداف التعليمية**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nاكتب من 3 إلى 5 أهداف تعليمية بصيغة دقيقة وواضحة، مثل:  \n- أن يعرّف الطالب ...  \n- أن يفسّر الطالب ...  \n- أن يطبّق الطالب ...  \n- أن يحلّل الطالب ...  \n- أن يستنتج الطالب ...\n\n📖 **المحتوى التعليمي التفصيلي (الشرائح الرئيسة)**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nقسّم المحتوى إلى شرائح متسلسلة منطقية تحتوي على شرح فعلي وأمثلة، بالصيغة التالية:\n\n🟦 **شريحة رقم [X]**\n📑 **العنوان:**  \nاكتب عنوانًا واضحًا ومناسبًا للفكرة الرئيسة في الشريحة.\n\n📄 **النص الرئيس (شرح فعلي):**  \nاكتب شرحًا تعليميًا كاملاً من 4 إلى 6 جمل بأسلوب مبسط ومنطقي.  \nوضّح المفهوم أو الفكرة مع تفسيرها بشكل واقعي وسهل.  \nاستخدم لغة تعليمية واضحة تعتمد على الفهم وليس الحفظ.\n\n💡 **أمثلة تطبيقية داخل الشريحة:**  \nقدّم مثالًا أو مثالين حقيقيين يوضّحان المفهوم (من الحياة اليومية أو مواقف تعليمية).  \nيمكن أن تكون أمثلة حسابية، لغوية، أو علمية حسب نوع الدرس.\n\n❓ **أسئلة تفاعلية بعد الشرح:**  \nضع سؤالًا أو سؤالين في نهاية كل شريحة لقياس الفهم مثل:  \n- سؤال اختيار من متعدد  \n- سؤال صح أو خطأ  \n- سؤال مفتوح قصير  \n\n📋 **ترتيب الشرائح المقترح:**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n1. الغلاف – يحتوي على عنوان العرض، المادة، المستوى، واسم المعلّم.  \n2. المقدمة – مقدمة جذابة عن الموضوع.  \n3. الأهداف التعليمية.  \n4. الشريحة الأولى – المفهوم الأساسي + مثال + سؤال بسيط.  \n5. الشريحة الثانية – شرح مفصل + تطبيق عملي + سؤال تفاعلي.  \n6. الشريحة الثالثة – مثال متقدم أو حالة من الواقع.  \n7. شريحة الأسئلة الجماعية أو النقاش.  \n8. شريحة الملخص – تحتوي على أهم النقاط التي تمت تغطيتها.  \n9. شريحة التقويم – أسئلة نهائية شاملة مع الإجابات النموذجية.  \n10. شريحة الختام – رسالة تحفيزية قصيرة أو عبارة شكر.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;\n\nreturn {\n  json: {\n    chatInput: prompt,\n    originalData: data\n  }\n};"
+      },
+      "id": "85bf4b24-e490-4963-8f54-436e61771dc4",
+      "name": "Prepare Presentation Prompt1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        -112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare prompt for worksheet AI Agent\nconst data = $input.item.json;\n\nconst prompt = `\n\nالمعلومات:\n- المادة: ${data.subject}\n- الموضوع: ${data.topic}\n- المستوى الدراسي: ${data.grade}\n\n\nأنت خبير تربوي محترف في إعداد أوراق العمل التفاعلية باللغة العربية.  \nمهمتك هي إنشاء **ورقة عمل تعليمية جاهزة للطلاب ليكتبوا إجاباتهم داخلها**،  \nتبدأ ببيانات الورقة الرسمية وتنتهي بمفتاح الإجابات (للمعلم فقط في الأسفل).  \nيجب أن تحتوي على فراغات واضحة للكتابة بدلاً من الإجابات الجاهزة.  \nاستخدم لغة فصيحة وسهلة، وتنسيقًا منظمًا وواضحًا.\n\nاتبع هذا النموذج الدقيق في الإخراج:\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📄 **ورقة العمل**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n**ورقة عمل:** [الموضوع]  \n**الاسم:** _________________________  \n**الصف:** _________________________  \n**التاريخ:** _________________________  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📚 **القسم الأول: مراجعة المفاهيم**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n**السؤال 1:** اختر الإجابة الصحيحة:  \n1. …  \n   أ. …  \n   ب. …  \n   ج. …  \n   د. …  \n   الإجابة: ( __________________ )\n\n**السؤال 2:** ضع (صح) أو (خطأ) أمام العبارات التالية:  \n1. … (        )  \n2. … (        )  \n3. … (        )\n\n**السؤال 3:** أكمل الفراغ بالكلمة المناسبة:  \n1. ____________________________  \n2. ____________________________  \n3. ____________________________\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🧠 **القسم الثاني: التطبيق العملي**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n**السؤال 4:** حل المسألة التالية:  \n________________________________________________________  \n________________________________________________________  \n\n**السؤال 5:** اربط بين المفهوم والمثال المناسب:  \n________________________________________________________  \n\n**السؤال 6:** اكتب خطوات الحل بالتسلسل الصحيح:  \n1. ______________________________  \n2. ______________________________  \n3. ______________________________  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n💡 **القسم الثالث: التفكير الناقد والإثراء**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n**السؤال 7:** لماذا نحتاج إلى هذا المفهوم في حياتنا اليومية؟  \n________________________________________________________  \n________________________________________________________  \n\n**السؤال 8:** اقترح مثالًا جديدًا يوضّح الفكرة بأسلوبك الخاص:  \n________________________________________________________  \n________________________________________________________  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📋 **مفتاح الإجابات النموذجية (للمعلم فقط)**\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n**القسم الأول:**  \n1. الإجابة الصحيحة: (ج)  \n2. 1- صح، 2- خطأ، 3- صح  \n3. الكلمات المناسبة: \"...\"  \n\n**القسم الثاني:**  \n4. الحل: \"...\"  \n5. المثال الصحيح: \"...\"  \n6. الخطوات: \"...\"  \n\n**القسم الثالث:**  \n7. السبب المتوقع: \"...\"  \n8. مثال نموذجي: \"...\"  \n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;\n\nreturn {\n  json: {\n    chatInput: prompt,\n    originalData: data\n  }\n};"
+      },
+      "id": "0e576e0b-8f28-487c-acfd-f1511ec2f9c4",
+      "name": "Prepare Worksheet Prompt1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1952,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "أنت وكيل ذكي متخصص في إنشاء محتوى تعليمي عربي احترافي. مهمتك هي إنشاء محتوى تعليمي شامل ومنظم بأعلى جودة ممكنة."
+        }
+      },
+      "id": "e33fa7e6-8a18-4579-aa5f-21c5f053f0e8",
+      "name": "AI Agent - Educational1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        2192,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "أنت وكيل ذكي متخصص في تصميم العروض التقديمية التعليمية. مهمتك هي إنشاء عروض تقديمية احترافية ومنظمة للأغراض التعليمية."
+        }
+      },
+      "id": "ca38ff73-50c8-4be2-841f-cebc125c6d3e",
+      "name": "AI Agent - Presentation1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        2224,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "أنت وكيل ذكي متخصص في تصميم أوراق العمل التعليمية. مهمتك هي إنشاء أوراق عمل تفاعلية ومتنوعة تساعد الطلاب على التعلم والتطبيق."
+        }
+      },
+      "id": "86f60795-367d-4235-bfff-16e7ae6d7235",
+      "name": "AI Agent - Worksheet1",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        2240,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build educational response\nconst aiResponse = $json.output || $json.text || '';\nconst originalData = $('Prepare Educational Prompt1').first().json.originalData;\n\nreturn {\n  json: {\n    content: aiResponse,\n    contentType: 'educational',\n    fileName: `${originalData.topic}_محتوى_تعليمي.pdf`,\n    originalData: originalData\n  }\n};"
+      },
+      "id": "3afbf688-f1f0-4967-967c-22f06551baf3",
+      "name": "Build Educational Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build presentation response\nconst aiResponse = $json.output || $json.text || '';\nconst originalData = $('Prepare Presentation Prompt1').first().json.originalData;\n\nreturn {\n  json: {\n    content: aiResponse,\n    contentType: 'presentation',\n    fileName: `${originalData.topic}_عرض_تقديمي.pptx`,\n    originalData: originalData\n  }\n};"
+      },
+      "id": "49928350-c87f-44cd-b51b-5fbc30412bbc",
+      "name": "Build Presentation Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build worksheet response\nconst aiResponse = $json.output || $json.text || '';\nconst originalData = $('Prepare Worksheet Prompt1').first().json.originalData;\n\nreturn {\n  json: {\n    content: aiResponse,\n    contentType: 'worksheet',\n    fileName: `${originalData.topic}_ورقة_عمل.pdf`,\n    originalData: originalData\n  }\n};"
+      },
+      "id": "8d577575-9d41-417a-af68-ac22f9ef3334",
+      "name": "Build Worksheet Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2624,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate PDF for educational content\nconst content = $json.content;\nconst fileName = $json.fileName;\nconst fileData = Buffer.from(content).toString('base64');\n\nreturn {\n  json: {\n    fileData: `data:application/pdf;base64,${fileData}`,\n    fileName: fileName,\n    mimeType: 'application/pdf',\n    content: content,\n    preview: content.substring(0, 500) + '...',\n    summary: 'تم إنشاء محتوى تعليمي PDF بنجاح',\n    originalData: $json.originalData\n  }\n};"
+      },
+      "id": "79b638a9-bc2e-448c-9206-cc5a54bd807e",
+      "name": "Generate PDF - Educational1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate PowerPoint\nconst content = $json.content;\nconst fileName = $json.fileName;\nconst fileData = Buffer.from(content).toString('base64');\n\nreturn {\n  json: {\n    fileData: `data:application/vnd.openxmlformats-officedocument.presentationml.presentation;base64,${fileData}`,\n    fileName: fileName,\n    mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',\n    content: content,\n    preview: content.substring(0, 500) + '...',\n    summary: 'تم إنشاء عرض تقديمي PowerPoint بنجاح',\n    originalData: $json.originalData\n  }\n};"
+      },
+      "id": "2c970a79-822e-4096-9634-1f522f2dd617",
+      "name": "Generate PowerPoint1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate PDF for worksheet\nconst content = $json.content;\nconst fileName = $json.fileName;\nconst fileData = Buffer.from(content).toString('base64');\n\nreturn {\n  json: {\n    fileData: `data:application/pdf;base64,${fileData}`,\n    fileName: fileName,\n    mimeType: 'application/pdf',\n    content: content,\n    preview: content.substring(0, 500) + '...',\n    summary: 'تم إنشاء ورقة عمل PDF بنجاح',\n    originalData: $json.originalData\n  }\n};"
+      },
+      "id": "348c1be0-2c0b-46a4-be3e-35bf966551f6",
+      "name": "Generate PDF - Worksheet1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2816,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Execute and finalize educational PDF\nconst data = $json;\nreturn { json: data };"
+      },
+      "id": "79096da8-0b98-4989-9b1e-d6d0f1d64c00",
+      "name": "Execute PDF Generation - Educational1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        -272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Execute and finalize PPTX\nconst data = $json;\nreturn { json: data };"
+      },
+      "id": "f0a6501a-912d-439a-8083-ac98a2202993",
+      "name": "Execute PPTX Generation1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Execute and finalize worksheet PDF\nconst data = $json;\nreturn { json: data };"
+      },
+      "id": "98bfa055-9fd2-4adf-9e61-5c7f30489004",
+      "name": "Execute PDF Generation - Worksheet1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        32
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Error response\nconst error = $json.error || 'فشل التحقق من المدخلات';\n\nreturn {\n  json: {\n    success: false,\n    error: error,\n    message: 'يرجى التأكد من إدخال جميع الحقول المطلوبة',\n    details: $json\n  }\n};"
+      },
+      "id": "e791057b-ad90-4e2e-b267-a345381fdea2",
+      "name": "Error Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "9e5c96ae-8ada-4f28-beee-563a9e16cfae",
+      "name": "Respond Error1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2144,
+        -304
+      ],
+      "id": "28d4a9ec-6d0c-4ac7-b2af-0391a8f16867",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "0dbQfqMc4TNybHrP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        80
+      ],
+      "id": "10d44bff-e4cb-4673-913e-d163830b86a1",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "0dbQfqMc4TNybHrP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        2176,
+        480
+      ],
+      "id": "c7213c30-cf8e-4e50-87a2-d7626f67bbcf",
+      "name": "Groq Chat Model3",
+      "credentials": {
+        "groqApi": {
+          "id": "0dbQfqMc4TNybHrP",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// This function will recursively search any object or array for \"quizData\"\nfunction findQuizData(obj) {\n  let results = [];\n\n  if (Array.isArray(obj)) {\n    for (const item of obj) {\n      results = results.concat(findQuizData(item));\n    }\n  } else if (obj && typeof obj === 'object') {\n    for (const [key, value] of Object.entries(obj)) {\n      if (key === 'quizData' ) {\n        results.push(value);\n      } else {\n        results = results.concat(findQuizData(value));\n      }\n    }\n  }\n\n  return results;\n}\n\n// Process all incoming items\nconst output = items.map(item => {\n  const found = findQuizData(item.json);\n  return {\n    json: {\n      quizData: found.length ? found.flat() : []\n    }\n  };\n});\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2304,
+        1888
+      ],
+      "id": "c0613224-ff60-4a77-9853-7946f78214a6",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "08d07eea-368f-48dc-a34a-0e4d0dbe8ff6",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "normal",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1648,
+        1808
+      ],
+      "id": "d43416b8-15a3-49fe-a97f-b6cffe81eb20",
+      "name": "If"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2864,
+        1776
+      ],
+      "id": "4a3d7a53-af7e-4fc0-a919-a1d0e3afce08",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "b7w5u0vPSKIuOQZl",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/b7w5u0vPSKIuOQZl",
+          "cachedResultName": "Q&A"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "input": "={{ $('Webhook').item.json.body.chatInput }}",
+            "session_id": "={{ $('Webhook').item.json.body.sessionId }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "session_id",
+              "displayName": "session_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2064,
+        1696
+      ],
+      "id": "a2cbbdad-0b37-4e78-9587-19a13cd6dbf0",
+      "name": "Call 'Q&A'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "rCDoyvyBUHXirCne",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/rCDoyvyBUHXirCne",
+          "cachedResultName": "Multiple Choice Assessment"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "input": "={{ $('Webhook').item.json.body.chatInput }}"
+          },
+          "matchingColumns": [
+            "input"
+          ],
+          "schema": [
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2064,
+        1888
+      ],
+      "id": "db649a13-30b0-447c-b845-34fefaf8b78f",
+      "name": "Call 'Multiple Choice Assessment'"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.chatInput }}",
+        "options": {
+          "systemMessage": "IF User Message is normal output normal\nIF User Message is about Exam output exam\nonly answer {normal, exam}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1312,
+        1808
+      ],
+      "id": "b8adea6b-0788-4485-b67c-b88910e85d15",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        2048
+      ],
+      "id": "aac6cf35-f3ed-4d43-9dbe-34f965d14b0f",
+      "name": "Groq Chat Model4",
+      "credentials": {
+        "groqApi": {
+          "id": "0dbQfqMc4TNybHrP",
+          "name": "Groq account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Extract Content Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [],
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract Content Data1": {
+      "main": [
+        [
+          {
+            "node": "Validate Input1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input1": {
+      "main": [
+        [
+          {
+            "node": "Check Validation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Validation1": {
+      "main": [
+        [
+          {
+            "node": "Switch Content Type1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Content Type1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Educational Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Presentation Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Worksheet Prompt1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Educational Prompt1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Educational1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Presentation Prompt1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Presentation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Worksheet Prompt1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Worksheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Educational1": {
+      "main": [
+        [
+          {
+            "node": "Build Educational Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Presentation1": {
+      "main": [
+        [
+          {
+            "node": "Build Presentation Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Worksheet1": {
+      "main": [
+        [
+          {
+            "node": "Build Worksheet Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Educational Response1": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF - Educational1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Presentation Response1": {
+      "main": [
+        [
+          {
+            "node": "Generate PowerPoint1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Worksheet Response1": {
+      "main": [
+        [
+          {
+            "node": "Generate PDF - Worksheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PDF - Educational1": {
+      "main": [
+        [
+          {
+            "node": "Execute PDF Generation - Educational1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PowerPoint1": {
+      "main": [
+        [
+          {
+            "node": "Execute PPTX Generation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate PDF - Worksheet1": {
+      "main": [
+        [
+          {
+            "node": "Execute PDF Generation - Worksheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Response1": {
+      "main": [
+        [
+          {
+            "node": "Respond Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute PDF Generation - Educational1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute PPTX Generation1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute PDF Generation - Worksheet1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Educational1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Presentation1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Worksheet1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Call 'Q&A'",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Call 'Multiple Choice Assessment'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Q&A'": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Multiple Choice Assessment'": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6f0d6796e008e7d64628bb2b28849f9fc77b21782d89c1cd37b0ff2d07921dd7"
+  },
+  "pinData": {},
+  "versionId": "0d4da37c-88f4-4c78-8208-06464b9b710a",
+  "activeVersionId": null,
+  "versionCounter": 1,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-12-03T10:59:39.327Z",
+      "createdAt": "2025-12-03T10:59:39.327Z",
+      "role": "workflow:owner",
+      "workflowId": "SK2ABaAbUl8x3xN2",
+      "projectId": "VVYuYvi2YmhR1gks",
+      "project": {
+        "updatedAt": "2025-12-03T10:45:59.799Z",
+        "createdAt": "2025-12-03T08:25:44.389Z",
+        "id": "VVYuYvi2YmhR1gks",
+        "name": "Abdullah Balqasim <abod098.a.d@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
