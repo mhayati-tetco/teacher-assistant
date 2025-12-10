@@ -1,0 +1,581 @@
+{
+  "updatedAt": "2025-12-08T04:57:36.000Z",
+  "createdAt": "2025-12-08T04:54:17.938Z",
+  "id": "xfvBAxdT4l7k1yn9",
+  "name": "Presentation Generation",
+  "description": null,
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Retrieve educational content for this topic:\n\nGrade: {{ $json.body.grade }}\nSubject: {{ $json.body.subject }}\nUnit: {{ $json.body.unit }}\nTopic: {{ $json.body.topic }}\n\nRetrieve ALL relevant content from the textbook about this specific topic.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a content retrieval agent specialized in extracting educational content from Saudi Ministry of Education textbooks stored in Pinecone.\n\nYour task is to retrieve ALL relevant content about the requested topic from the vector database.\n\nIMPORTANT INSTRUCTIONS:\n1. Use the Pinecone tool to search for content related to the grade, subject, unit, and topic\n2. Retrieve as much relevant content as possible\n3. Return the complete retrieved content without summarization\n4. Preserve the original Arabic text exactly as it appears\n5. Include explanations, examples, and any educational material found\n\nYou MUST use the Pinecone retrieval tool - never answer from your own knowledge.\n\nReturn the retrieved content in clear, structured format maintaining all Arabic text."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        320,
+        496
+      ],
+      "id": "68868b01-c021-4c01-871f-9fb16a6fde25",
+      "name": "Stage 1: Content Retriever Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "Omartificial-Intelligence-Space/Arabic-Triplet-Matryoshka-V2",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsHuggingFaceInference",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1056
+      ],
+      "id": "659aaebb-81fc-4d45-aa29-27e84b87b84b",
+      "name": "Embeddings HuggingFace",
+      "credentials": {
+        "huggingFaceApi": {
+          "id": "gdO15PAvH3NdBnI6",
+          "name": "HuggingFaceApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        256,
+        800
+      ],
+      "id": "b2f5bf5e-a3f4-4edc-b934-22c92ed9f375",
+      "name": "OpenAI Chat Model - Retrieval",
+      "credentials": {
+        "openAiApi": {
+          "id": "rESstMvwCRZkSXzp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        864,
+        800
+      ],
+      "id": "87dffd49-8af6-4084-8253-52c522ebaa33",
+      "name": "OpenAI Chat Model - Presentation",
+      "credentials": {
+        "openAiApi": {
+          "id": "rESstMvwCRZkSXzp",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "presentation-generator",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -80,
+        544
+      ],
+      "id": "531f74d6-3826-432c-8bc7-872bbe389ec7",
+      "name": "Webhook",
+      "webhookId": "presentation-generator"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Use this tool to retrieve information ONLY from the Pinecone textbook database. Never answer from your own knowledge without calling this tool.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "science",
+          "mode": "list",
+          "cachedResultName": "science"
+        },
+        "topK": 120,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        784
+      ],
+      "id": "3d0073e9-6b7d-4a7f-a832-f10d64c9ee1b",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "nNBsJs8UIq8YQVJ5",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare presentation generation prompt with retrieved content\nconst retrievedContent = $json.output || $json.text || '';\nconst data = $('Webhook').first().json.body;\n\nconst prompt = `\nYou are a professional educational designer creating PowerPoint presentations for Saudi Ministry of Education curriculum.\n\nPRESENTATION INFORMATION:\n- Subject: ${data.subject}\n- Unit: ${data.unit}\n- Topic: ${data.topic}\n- Grade Level: ${data.grade}\n\nRETRIEVED TEXTBOOK CONTENT (USE THIS AS YOUR PRIMARY SOURCE):\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n${retrievedContent}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nCRITICAL INSTRUCTIONS:\n✓ Write ALL content in Arabic (العربية الفصحى)\n✓ Use the retrieved content above as your PRIMARY source\n✓ Include emojis exactly as shown in the structure\n✓ Write COMPLETE, DETAILED content - not instructions or placeholders\n✓ Each content slide must be comprehensive and self-contained\n✓ Minimum 6-8 sentences for each main explanation\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nREQUIRED STRUCTURE - FOLLOW EXACTLY:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📋 المقدمة العامة\n\n[Write 5-6 complete sentences in Arabic introducing the topic. Explain:\n- What the lesson is about\n- Why it's important for students\n- How it relates to daily life\n- Encouragement to explore and learn\nDO NOT write \"write an introduction\" - WRITE THE ACTUAL INTRODUCTION]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n🎯 الأهداف التعليمية\n\n[Write 5-6 complete learning objectives in Arabic, each on a new line:\n- سيتمكن الطالب من تعريف... [complete objective]\n- سيتمكن الطالب من شرح... [complete objective]\n- سيتمكن الطالب من تطبيق... [complete objective]\n- سيتمكن الطالب من تحليل... [complete objective]\n- سيتمكن الطالب من استنتاج... [complete objective]\nDO NOT write \"objectives:\" - WRITE THE ACTUAL OBJECTIVES]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n📖 المحتوى التعليمي التفصيلي\n\n[Create 5-7 content slides. For EACH slide, you MUST include ALL four sections below]\n\n🟦 الشريحة رقم [1]\n\n📑 العنوان:\n[Write ONE clear, specific title in Arabic - NO instructions, just the title]\n\n📄 النص الرئيسي (الشرح الفعلي):\n[Extract information from the RETRIEVED CONTENT above and write 6-8 COMPLETE sentences in Arabic explaining the concept in detail. Use simple, clear language. Focus on understanding. DO NOT write \"write an explanation\" - WRITE THE ACTUAL DETAILED EXPLANATION with full sentences]\n\n💡 الأمثلة التطبيقية:\n[Write 2-3 REAL examples in Arabic from the retrieved content. Each example should be 1-2 sentences. DO NOT write \"example:\" - WRITE THE ACTUAL EXAMPLES]\n\n❓ الأسئلة التفاعلية:\n[Write 2-3 ACTUAL questions in Arabic to test understanding:\n- [Complete question 1 with all answer choices if multiple choice]\n- [Complete question 2]\n- [Complete question 3]\nDO NOT write \"question:\" - WRITE THE ACTUAL QUESTIONS]\n\n🟦 الشريحة رقم [2]\n\n📑 العنوان:\n[Write title]\n\n📄 النص الرئيسي (الشرح الفعلي):\n[Write 6-8 complete sentences]\n\n💡 الأمثلة التطبيقية:\n[Write 2-3 actual examples]\n\n❓ الأسئلة التفاعلية:\n[Write 2-3 actual questions]\n\n[Continue for slides 3, 4, 5, 6, 7...]\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nREMEMBER:\n1. Keep emojis (🟦 📑 📄 💡 ❓) exactly as shown\n2. Each slide MUST have all 4 sections: العنوان + النص الرئيسي + الأمثلة + الأسئلة\n3. Use the RETRIEVED CONTENT above as your main source\n4. Write 6-8 full sentences for each النص الرئيسي section\n5. Make examples specific and practical from the textbook\n6. Write complete questions, not just \"question:\"\n7. Use natural, clear Arabic appropriate for ${data.grade}\n8. Extract maximum information from the retrieved content\n\nSTART WRITING THE COMPLETE PRESENTATION NOW:\n`;\n\nreturn {\n  json: {\n    chatInput: prompt,\n    retrievedContent: retrievedContent,\n    originalData: data\n  }\n};"
+      },
+      "id": "7be1d747-4e94-4dcf-879b-321d8fb937e5",
+      "name": "Prepare Presentation Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "agent": "conversationalAgent",
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert educational content creator for Saudi Ministry of Education.\n\nYour mission:\n- Create comprehensive educational presentations in Arabic\n- Use retrieved textbook content as the PRIMARY and MAIN source\n- Extract ALL relevant information from the provided content\n- Structure information into detailed, complete slides\n\nCRITICAL RULES:\n1. EVERY content slide MUST have ALL 4 components:\n   - 📑 العنوان (clear title)\n   - 📄 النص الرئيسي (6-8 complete sentences of explanation)\n   - 💡 الأمثلة التطبيقية (2-3 real examples)\n   - ❓ الأسئلة التفاعلية (2-3 complete questions)\n\n2. Keep emojis in the output (🟦 📑 📄 💡 ❓)\n\n3. Write ACTUAL content, never write meta-instructions like:\n   ❌ \"اكتب شرحاً...\" \n   ❌ \"write an explanation...\"\n   ❌ \"[Write examples]\"\n   ✓ Write the actual explanation, examples, and questions\n\n4. Use the retrieved textbook content extensively - extract maximum information\n\n5. Each النص الرئيسي section needs 6-8 FULL sentences explaining the concept in detail\n\n6. Make slides comprehensive and information-rich based on the retrieved content\n\nRemember: You're not giving instructions - you're creating the actual presentation content."
+        }
+      },
+      "id": "05136833-e0fb-4a4c-8f4c-2ab12a427914",
+      "name": "AI Agent - Presentation Generator",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        880,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse and structure the AI-generated presentation content\nconst aiResponse = $json.output || $json.text || '';\nconst originalData = $('Prepare Presentation Prompt').first().json.originalData;\n\nreturn {\n  json: {\n    presentationContent: aiResponse,\n    metadata: {\n      subject: originalData.subject,\n      unit: originalData.unit,\n      topic: originalData.topic,\n      grade: originalData.grade,\n      generatedAt: new Date().toISOString()\n    }\n  }\n};"
+      },
+      "id": "7515ae28-8ddb-4e0e-a72c-10b64b713df6",
+      "name": "Structure Presentation Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create slides from the AI-generated content\nconst content = $json.presentationContent || '';\nconst metadata = $json.metadata || {};\n\n\nconst slides = [];\n\nfunction extractSection(content, startMarker, endMarker) {\n  if (!content) return '';\n  const startIndex = content.indexOf(startMarker);\n  if (startIndex === -1) return '';\n  const contentAfterStart = content.substring(startIndex + startMarker.length);\n  if (!endMarker) return contentAfterStart.trim();\n  const endIndex = contentAfterStart.indexOf(endMarker);\n  const extracted = endIndex !== -1 ? contentAfterStart.substring(0, endIndex) : contentAfterStart;\n  return extracted.trim();\n}\n\nfunction cleanText(text) {\n  if (!text) return '';\n  return text.replace(/\\*\\*/g, '').replace(/\\*/g, '').replace(/^━+$/gm, '').replace(/^─+$/gm, '').replace(/\\n{3,}/g, '\\n\\n').trim();\n}\n\nlet introduction = extractSection(content, '📋 المقدمة العامة', '🎯');\nif (!introduction) introduction = extractSection(content, 'المقدمة العامة', '🎯');\n\nlet objectives = extractSection(content, '🎯 الأهداف التعليمية', '📖');\nif (!objectives) objectives = extractSection(content, 'الأهداف التعليمية', '📖');\n\nlet mainContent = extractSection(content, '📖 المحتوى التعليمي التفصيلي', '');\nif (!mainContent) mainContent = extractSection(content, 'المحتوى التعليمي التفصيلي', '');\nif (!mainContent) mainContent = content;\n\nslides.push({\n  type: 'cover',\n  title: metadata.topic || 'عرض تقديمي تعليمي',\n  subtitle: `${metadata.subject || ''} | ${metadata.grade || ''}`,\n  content: metadata.unit || ''\n});\n\nif (introduction && introduction.length > 20) {\n  slides.push({ type: 'introduction', title: 'المقدمة', content: cleanText(introduction) });\n}\n\nif (objectives && objectives.length > 20) {\n  slides.push({ type: 'objectives', title: 'الأهداف التعليمية', content: cleanText(objectives) });\n}\n\nconst slidePatterns = [\n  /🟦 الشريحة رقم \\[(\\d+)\\]([\\s\\S]*?)(?=🟦 الشريحة رقم|$)/g,\n  /🟦 \\*\\*Slide Number \\[(\\d+)\\]\\*\\*([\\s\\S]*?)(?=🟦|$)/g,\n];\n\nlet contentSlides = [];\n\nfor (const pattern of slidePatterns) {\n  const tempSlides = [];\n  let match;\n  while ((match = pattern.exec(mainContent)) !== null) {\n    const slideNumber = parseInt(match[1]);\n    const slideContent = match[2];\n    let title = extractSection(slideContent, '📑 العنوان:', '📄');\n    if (!title) title = extractSection(slideContent, 'العنوان:', '\\n\\n');\n    let mainText = extractSection(slideContent, '📄 النص الرئيسي', '💡');\n    if (!mainText) mainText = extractSection(slideContent, 'النص الرئيسي', '💡');\n    let examples = extractSection(slideContent, '💡 الأمثلة التطبيقية:', '❓');\n    if (!examples) examples = extractSection(slideContent, 'الأمثلة التطبيقية', '❓');\n    let questions = extractSection(slideContent, '❓ الأسئلة التفاعلية:', '🟦');\n    if (!questions) questions = extractSection(slideContent, 'الأسئلة التفاعلية', '🟦');\n    if (!questions) questions = extractSection(slideContent, '❓', '');\n    let fullContent = '';\n    if (mainText && mainText.length > 20) fullContent += cleanText(mainText) + '\\n\\n';\n    if (examples && examples.length > 10) fullContent += '💡 أمثلة تطبيقية:\\n' + cleanText(examples) + '\\n\\n';\n    if (questions && questions.length > 10) fullContent += '❓ أسئلة تفاعلية:\\n' + cleanText(questions);\n    if (fullContent.trim().length > 30) {\n      tempSlides.push({ type: 'content', slideNumber: slideNumber, title: cleanText(title) || `شريحة ${slideNumber}`, content: fullContent.trim() });\n    }\n  }\n  if (tempSlides.length > 0) { contentSlides = tempSlides; break; }\n}\n\nif (contentSlides.length === 0 && mainContent.length > 100) {\n  const paragraphs = mainContent.split(/\\n\\n+/).map(p => p.trim()).filter(p => p.length > 100 && !p.startsWith('━') && !p.startsWith('─'));\n  paragraphs.slice(0, 6).forEach((para, idx) => {\n    const lines = para.split('\\n');\n    let title = `نقطة رئيسية ${idx + 1}`;\n    let content = para;\n    if (lines.length > 1 && lines[0].length < 80) {\n      title = lines[0].replace(/[🟦📑📄💡❓]/g, '').trim();\n      content = lines.slice(1).join('\\n').trim();\n    }\n    contentSlides.push({ type: 'content', slideNumber: idx + 1, title: cleanText(title), content: cleanText(content) });\n  });\n}\n\ncontentSlides.sort((a, b) => a.slideNumber - b.slideNumber);\nslides.push(...contentSlides);\n\nslides.push({\n  type: 'summary',\n  title: 'الملخص',\n  content: `يحتوي على أهم النقاط التي تمت تغطيتها في العرض التقديمي:\\n\\n• عدد الشرائح الرئيسية: ${contentSlides.length}\\n• الموضوع: ${metadata.topic || ''}\\n• المادة: ${metadata.subject || ''}\\n• الصف: ${metadata.grade || ''}`\n});\n\nslides.push({\n  type: 'closing',\n  title: 'شكراً لكم',\n  content: 'نتمنى لكم التوفيق والنجاح في رحلتكم التعليمية 🎓\\n\\nاستمروا في التعلم والتطور'\n});\n\nreturn {\n  json: {\n    slides: slides,\n    metadata: metadata,\n    \n    slideCount: slides.length,\n    contentSlidesCount: contentSlides.length\n  }\n};"
+      },
+      "id": "7b8d5e3b-2856-40ce-a950-164f73768432",
+      "name": "Create Slides Structure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst slides = data.slides || [];\nconst metadata = data.metadata || {};\n\n// Build presentationTitle for Google Slides\nconst presentationTitle = `${metadata.topic || ''} - ${metadata.subject || ''} (${metadata.grade || ''})`.trim();\n\nreturn { \n  json: { \n    presentationTitle, \n    slides, \n    metadata\n  } \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        496
+      ],
+      "id": "f90b628c-d556-4794-bcce-88ca6f03370a",
+      "name": "Prepare Google Slides Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://slides.googleapis.com/v1/presentations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSlidesOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: $json.presentationTitle }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2000,
+        304
+      ],
+      "id": "708e283b-b653-43e6-a07a-5a33af6916aa",
+      "name": "Google Slides - Create Presentation",
+      "credentials": {
+        "googleSlidesOAuth2Api": {
+          "id": "WXCCkzIUAez1U74X",
+          "name": "Google Slides account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2,
+      "position": [
+        2272,
+        496
+      ],
+      "id": "c2fe2e89-deee-4f77-a42d-b1d7d41126cf",
+      "name": "Merge Slides Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json;\nconst presentationId = data.presentationId;\nconst slides = data.slides || [];\nconst metadata = data.metadata || {};\nconst requests = [];\n\nfunction createContentSlideRequests(slideObjectId, titleText, bodyText) {\n  const reqs = [];\n  reqs.push({ createSlide: { objectId: slideObjectId, slideLayoutReference: { predefinedLayout: 'BLANK' } } });\n  const hasTitle = titleText && titleText.trim().length > 0;\n  const hasBody = bodyText && bodyText.trim().length > 0;\n  if (!hasTitle && !hasBody) return reqs;\n  if (hasTitle) {\n    const titleShapeId = `${slideObjectId}_title`;\n    reqs.push({ createShape: { objectId: titleShapeId, shapeType: 'TEXT_BOX', elementProperties: { pageObjectId: slideObjectId, size: { width: { magnitude: 8000000, unit: 'EMU' }, height: { magnitude: 800000, unit: 'EMU' } }, transform: { scaleX: 1, scaleY: 1, translateX: 700000, translateY: 400000, unit: 'EMU' } } } });\n    reqs.push({ insertText: { objectId: titleShapeId, insertionIndex: 0, text: titleText.trim() } });\n    reqs.push({ updateTextStyle: { objectId: titleShapeId, style: { bold: true, fontSize: { magnitude: 28, unit: 'PT' }, foregroundColor: { opaqueColor: { rgbColor: { red: 0.2, green: 0.2, blue: 0.5 } } } }, fields: 'bold,fontSize,foregroundColor' } });\n    reqs.push({ updateParagraphStyle: { objectId: titleShapeId, style: { direction: 'RIGHT_TO_LEFT', alignment: 'CENTER' }, fields: 'direction,alignment' } });\n  }\n  if (hasBody) {\n    const bodyShapeId = `${slideObjectId}_body`;\n    reqs.push({ createShape: { objectId: bodyShapeId, shapeType: 'TEXT_BOX', elementProperties: { pageObjectId: slideObjectId, size: { width: { magnitude: 8000000, unit: 'EMU' }, height: { magnitude: 4500000, unit: 'EMU' } }, transform: { scaleX: 1, scaleY: 1, translateX: 700000, translateY: 1400000, unit: 'EMU' } } } });\n    reqs.push({ insertText: { objectId: bodyShapeId, insertionIndex: 0, text: bodyText.trim() } });\n    reqs.push({ updateTextStyle: { objectId: bodyShapeId, style: { fontSize: { magnitude: 16, unit: 'PT' } }, fields: 'fontSize' } });\n    reqs.push({ updateParagraphStyle: { objectId: bodyShapeId, style: { direction: 'RIGHT_TO_LEFT', alignment: 'START' }, fields: 'direction,alignment' } });\n  }\n  return reqs;\n}\n\nfor (let i = 0; i < slides.length; i++) {\n  const slide = slides[i];\n  const slideId = `slide_${slide.type}_${i}`;\n  let title = (slide.title || '').trim();\n  let content = (slide.content || slide.subtitle || '').trim();\n  if (slide.type === 'content') title = title || `شريحة ${slide.slideNumber || i}`;\n  const slideRequests = createContentSlideRequests(slideId, title, content);\n  const validRequests = slideRequests.filter(req => req && Object.keys(req).length > 0);\n  requests.push(...validRequests);\n}\n\nconst finalRequests = requests.filter(req => {\n  if (!req || typeof req !== 'object') return false;\n  return Object.keys(req).length > 0;\n});\n\nreturn { json: { presentationId, requests: finalRequests, metadata, totalRequests: finalRequests.length, slideCount: slides.length } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        496
+      ],
+      "id": "c4d119de-6a8b-4ead-b873-0acf09dcf94d",
+      "name": "Build Slides Requests"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://slides.googleapis.com/v1/presentations/{{$json.presentationId}}:batchUpdate",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSlidesOAuth2Api",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ requests: $json.requests }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2816,
+        256
+      ],
+      "id": "df9fb800-364a-4cb8-9b7a-a35360d9ea6b",
+      "name": "Google Slides - BatchUpdate"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        3056,
+        496
+      ],
+      "id": "437c88e2-c919-4b04-89bd-d5e559acaadc",
+      "name": "Merge Metadata with Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get merged data - now we have both metadata and presentationId\nconst data = $json;\n\n// presentationId comes from BatchUpdate\nconst presentationId = data.presentationId;\nconst presentationLink = `https://docs.google.com/presentation/d/${presentationId}/edit`;\n\n// metadata comes from Build Slides Requests (merged)\nconst metadata = data.metadata || {};\nconst slideCount = data.slideCount || 0;\n\n// FIXED: Create file name correctly - topic FIRST, then suffix\nconst fileName = metadata.topic ? `${metadata.topic}_عرض_تقديمي.pptx` : 'عرض_تقديمي.pptx';\n\nreturn {\n  json: {\n    success: true,\n    message: 'تم إنشاء العرض التقديمي على Google Slides بنجاح ✅',\n    presentationLink: presentationLink,\n    presentationId: presentationId,\n    metadata: {\n      subject: metadata.subject || '',\n      unit: metadata.unit || '',\n      topic: metadata.topic || '',\n      grade: metadata.grade || '',\n      fileName: fileName,\n      slideCount: slideCount,\n      generatedAt: metadata.generatedAt || ''\n    },\n    generatedAt: new Date().toISOString()\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3248,
+        496
+      ],
+      "id": "38695a01-b6a7-4c79-8690-0a9d84b9d848",
+      "name": "Format Slides Response"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        3488,
+        496
+      ],
+      "id": "a3f0b444-33d5-4ba2-b569-cc886efc99f4",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "content": "## Greate ",
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "e16f08e7-a870-4a21-b3ba-25abf35c6e9e",
+      "name": "Sticky Note1"
+    }
+  ],
+  "connections": {
+    "Stage 1: Content Retriever Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepare Presentation Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings HuggingFace": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Retrieval": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 1: Content Retriever Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model - Presentation": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent - Presentation Generator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Stage 1: Content Retriever Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 1: Content Retriever Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Presentation Prompt": {
+      "main": [
+        [
+          {
+            "node": "AI Agent - Presentation Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent - Presentation Generator": {
+      "main": [
+        [
+          {
+            "node": "Structure Presentation Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structure Presentation Data": {
+      "main": [
+        [
+          {
+            "node": "Create Slides Structure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Slides Structure": {
+      "main": [
+        [
+          {
+            "node": "Prepare Google Slides Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Google Slides Data": {
+      "main": [
+        [
+          {
+            "node": "Google Slides - Create Presentation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Slides Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Slides - Create Presentation": {
+      "main": [
+        [
+          {
+            "node": "Merge Slides Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Slides Data": {
+      "main": [
+        [
+          {
+            "node": "Build Slides Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Slides Requests": {
+      "main": [
+        [
+          {
+            "node": "Google Slides - BatchUpdate",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Metadata with Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Slides - BatchUpdate": {
+      "main": [
+        [
+          {
+            "node": "Merge Metadata with Response",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Metadata with Response": {
+      "main": [
+        [
+          {
+            "node": "Format Slides Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Slides Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9f7fb04b-385b-4ac6-b48a-68e12fdb9877",
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-12-08T04:54:17.948Z",
+      "createdAt": "2025-12-08T04:54:17.948Z",
+      "role": "workflow:owner",
+      "workflowId": "xfvBAxdT4l7k1yn9",
+      "projectId": "o0O5USm39pN3UMmO",
+      "project": {
+        "updatedAt": "2025-11-27T10:31:45.718Z",
+        "createdAt": "2025-11-27T10:23:36.590Z",
+        "id": "o0O5USm39pN3UMmO",
+        "name": "Norah  Hussain <norahhussain26@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}

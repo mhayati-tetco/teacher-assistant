@@ -4,7 +4,7 @@
   "id": "L8OP8ikUluR2zebo",
   "name": "Groq Test Workflow",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -76,21 +76,21 @@
   "meta": null,
   "pinData": {},
   "versionId": "369f2fa8-e03c-4b5e-bfab-ec4f1dd542c2",
-  "versionCounter": 22,
+  "versionCounter": 24,
   "triggerCount": 1,
   "tags": [],
   "shared": [
     {
-      "updatedAt": "2025-11-23T06:17:53.294Z",
-      "createdAt": "2025-11-23T06:17:53.294Z",
+      "updatedAt": "2025-11-27T10:31:22.431Z",
+      "createdAt": "2025-11-27T10:31:22.431Z",
       "role": "workflow:owner",
       "workflowId": "L8OP8ikUluR2zebo",
-      "projectId": "Q2G5YBJ0WltmvbxJ",
+      "projectId": "o0O5USm39pN3UMmO",
       "project": {
-        "updatedAt": "2025-11-23T06:08:53.090Z",
-        "createdAt": "2025-11-20T11:33:10.575Z",
-        "id": "Q2G5YBJ0WltmvbxJ",
-        "name": "Maisum Yusuf mhayati.c@tetco.sa <mhayati.c@tetco.sa>",
+        "updatedAt": "2025-11-27T10:31:45.718Z",
+        "createdAt": "2025-11-27T10:23:36.590Z",
+        "id": "o0O5USm39pN3UMmO",
+        "name": "Norah  Hussain <norahhussain26@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null

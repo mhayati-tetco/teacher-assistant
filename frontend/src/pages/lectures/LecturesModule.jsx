@@ -1,6 +1,8 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import { moeColors, moduleColors, moeBorderRadius } from '../../theme/moeTheme';
+import PresentationPage from './PresentationPage';
+import LessonPlanPage from './LessonPlanPage';
 
 /**
  * LECTURES MODULE - Owner: lectures branch
@@ -8,6 +10,7 @@ import { moeColors, moduleColors, moeBorderRadius } from '../../theme/moeTheme';
 
 const LecturesMain = ({ language = 'ar' }) => {
   const isArabic = language === 'ar';
+  const navigate = useNavigate();
 
   const styles = {
     container: { maxWidth: '1200px', margin: '0 auto' },
@@ -52,13 +55,19 @@ const LecturesMain = ({ language = 'ar' }) => {
   };
 
   const features = [
-    { icon: '📋', titleAr: 'إنشاء خطة درس', titleEn: 'Create Lecture Plan' },
-    { icon: '📊', titleAr: 'عرض تقديمي', titleEn: 'Generate Presentation' },
-    { icon: '📅', titleAr: 'الجدول الزمني', titleEn: 'Timeline View' },
-    { icon: '🎥', titleAr: 'فيديوهات مقترحة', titleEn: 'Video Recommendations' },
-    { icon: '👥', titleAr: 'مهام تعاونية', titleEn: 'Collaborative Tasks' },
-    { icon: '📖', titleAr: 'مكتبة المواد', titleEn: 'Material Library' },
+    { icon: '📋', titleAr: 'إنشاء خطة مادة', titleEn: 'Create Course Plan', path: '/lectures/lesson-plan' },
+    { icon: '📊', titleAr: 'عرض تقديمي', titleEn: 'Generate Presentation', path: '/lectures/presentation' },
+    { icon: '📅', titleAr: 'الجدول الزمني', titleEn: 'Timeline View', path: null },
+    { icon: '🎥', titleAr: 'فيديوهات مقترحة', titleEn: 'Video Recommendations', path: null },
+    { icon: '👥', titleAr: 'مهام تعاونية', titleEn: 'Collaborative Tasks', path: null },
+    { icon: '📖', titleAr: 'مكتبة المواد', titleEn: 'Material Library', path: null },
   ];
+
+  const handleFeatureClick = (feature) => {
+    if (feature.path) {
+      navigate(feature.path);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -78,7 +87,11 @@ const LecturesMain = ({ language = 'ar' }) => {
 
         <div style={styles.featureGrid}>
           {features.map((feature, index) => (
-            <div key={index} style={styles.featureCard}>
+            <div
+              key={index}
+              style={styles.featureCard}
+              onClick={() => handleFeatureClick(feature)}
+            >
               <span style={{ fontSize: '32px' }}>{feature.icon}</span>
               <p style={{ marginTop: '8px', fontWeight: 500 }}>
                 {isArabic ? feature.titleAr : feature.titleEn}
@@ -97,6 +110,8 @@ const LecturesModule = ({ language }) => {
       <Route index element={<LecturesMain language={language} />} />
       <Route path="create" element={<LecturesMain language={language} />} />
       <Route path="plan/:planId" element={<LecturesMain language={language} />} />
+      <Route path="presentation" element={<PresentationPage />} />
+      <Route path="lesson-plan" element={<LessonPlanPage />} />
     </Routes>
   );
 };
