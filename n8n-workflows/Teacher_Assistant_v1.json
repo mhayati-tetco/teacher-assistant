@@ -633,7 +633,7 @@
       "name": "Groq Chat Model",
       "credentials": {
         "groqApi": {
-          "id": "0dbQfqMc4TNybHrP",
+          "id": "39yaqKuLiO92JQW3",
           "name": "Groq account"
         }
       }
@@ -653,7 +653,7 @@
       "name": "Groq Chat Model2",
       "credentials": {
         "groqApi": {
-          "id": "0dbQfqMc4TNybHrP",
+          "id": "39yaqKuLiO92JQW3",
           "name": "Groq account"
         }
       }
@@ -673,7 +673,7 @@
       "name": "Groq Chat Model3",
       "credentials": {
         "groqApi": {
-          "id": "0dbQfqMc4TNybHrP",
+          "id": "39yaqKuLiO92JQW3",
           "name": "Groq account"
         }
       }
@@ -862,7 +862,7 @@
       "name": "Groq Chat Model4",
       "credentials": {
         "groqApi": {
-          "id": "0dbQfqMc4TNybHrP",
+          "id": "39yaqKuLiO92JQW3",
           "name": "Groq account"
         }
       }

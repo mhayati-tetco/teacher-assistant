@@ -4,7 +4,7 @@
   "id": "L8OP8ikUluR2zebo",
   "name": "Groq Test Workflow",
   "description": null,
-  "active": true,
+  "active": false,
   "isArchived": false,
   "nodes": [
     {
@@ -76,21 +76,22 @@
   "meta": null,
   "pinData": {},
   "versionId": "369f2fa8-e03c-4b5e-bfab-ec4f1dd542c2",
-  "versionCounter": 22,
+  "activeVersionId": null,
+  "versionCounter": 23,
   "triggerCount": 1,
   "tags": [],
   "shared": [
     {
-      "updatedAt": "2025-11-23T06:17:53.294Z",
-      "createdAt": "2025-11-23T06:17:53.294Z",
+      "updatedAt": "2025-12-03T10:59:42.811Z",
+      "createdAt": "2025-12-03T10:59:42.811Z",
       "role": "workflow:owner",
       "workflowId": "L8OP8ikUluR2zebo",
-      "projectId": "Q2G5YBJ0WltmvbxJ",
+      "projectId": "VVYuYvi2YmhR1gks",
       "project": {
-        "updatedAt": "2025-11-23T06:08:53.090Z",
-        "createdAt": "2025-11-20T11:33:10.575Z",
-        "id": "Q2G5YBJ0WltmvbxJ",
-        "name": "Maisum Yusuf mhayati.c@tetco.sa <mhayati.c@tetco.sa>",
+        "updatedAt": "2025-12-03T10:45:59.799Z",
+        "createdAt": "2025-12-03T08:25:44.389Z",
+        "id": "VVYuYvi2YmhR1gks",
+        "name": "Abdullah Balqasim <abod098.a.d@gmail.com>",
         "type": "personal",
         "icon": null,
         "description": null
