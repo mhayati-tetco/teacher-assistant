@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2025-12-04T08:45:03.000Z",
+  "updatedAt": "2025-12-09T09:23:39.000Z",
   "createdAt": "2025-12-04T04:53:06.625Z",
   "id": "ZViSyDjHHkvLzps6",
   "name": "Performance Analytics",
@@ -17,8 +17,8 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -400,
-        -320
+        -1520,
+        352
       ],
       "id": "e39f14fe-fc9e-4f89-af63-22c3f88cbf8d",
       "name": "Webhook",
@@ -48,8 +48,8 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        928,
-        -320
+        2752,
+        0
       ],
       "id": "9724e717-ce54-48f5-b24c-cf625de91851",
       "name": "Respond to Webhook"
@@ -63,12 +63,13 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        -208,
-        -320
+        -1312,
+        352
       ],
       "id": "aaf18113-55c6-4872-9bde-858298362628",
       "name": "Extract from File",
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -78,45 +79,11 @@
       "type": "n8n-nodes-base.aggregate",
       "typeVersion": 1,
       "position": [
-        -16,
-        -320
+        -448,
+        48
       ],
       "id": "8db906b8-c781-409f-894a-faa295c1c6bd",
       "name": "Aggregate"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.data }}",
-        "options": {
-          "systemMessage": "=You are an expert educational data analyst specializing in student performance analysis for Saudi schools.\n\nYou will receive CSV data containing student information with the following columns:\n- Student_ID, Student_Name, Age, Grade\n- Subject scores: Math_Score, Science_Score, Arabic_Score, English_Score\n- Performance metrics: Attendance_Percentage, Homework_Completion, Participation_Score, Behavior_Score\n- Exam scores: Exam1_Score, Exam2_Score, Exam3_Score, Final_Exam_Score\n- Attendance issues: Absences, Late_Arrivals\n- Notes: Teacher observations\n\nYour task is to analyze this data and provide:\n\n1. **Overall Performance Summary:**\n   - Calculate class averages for each subject\n   - Identify performance trends\n   - Calculate overall class statistics\n\n2. **Student Strengths (Top 5):**\n   - What are the class's strongest areas?\n   - Which subjects show highest performance?\n   - What positive patterns do you observe?\n\n3. **Student Weaknesses (Top 5):**\n   - What areas need improvement?\n   - Which students are struggling the most?\n   - What concerning patterns do you observe?\n\n4. **At-Risk Students:**\n   - Identify students with averages below 60%\n   - Students with high absences (>10)\n   - Students with declining exam scores\n\n5. **Top Performers:**\n   - Students with averages above 90%\n   - Students with excellent attendance and participation\n\n6. **Subject-Specific Analysis:**\n   - Which subject has the lowest class average?\n   - Which subject shows the most variation?\n   - Correlation between attendance and performance\n\n7. **Data for Visualizations:**\n   - Provide aggregated data suitable for charts\n   - Weekly/monthly performance trends if available\n   - Subject comparison data\n   - Performance distribution data\n\nFormat your response as a detailed analytical report with specific numbers, percentages, and student names where relevant."
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3,
-      "position": [
-        160,
-        -320
-      ],
-      "id": "79e2ef1e-0f8d-4240-9210-040558e9c241",
-      "name": "AI Agent"
-    },
-    {
-      "parameters": {
-        "promptType": "define",
-        "text": "={{ $json.output }}",
-        "options": {
-          "systemMessage": "=You are a data formatting specialist. Your job is to transform educational analysis into a structured JSON format for a web application.\n\nYou will receive a detailed analytical report about student performance. Transform this into the following EXACT JSON structure:\n\n{\n  \"charts\": {\n    \"lineData\": [\n      // Performance over time (if available) or exam progression\n      // Array of objects with: { \"name\": \"Week/Exam name\", \"value\": number }\n      // Example: { \"name\": \"Exam 1\", \"value\": 75 }\n      // Must have at least 4 data points\n    ],\n    \"barData\": [\n      // Subject comparison - class averages\n      // Array of objects with: { \"name\": \"Subject name in Arabic\", \"value\": number }\n      // Example: { \"name\": \"الرياضيات\", \"value\": 75 }\n      // Must include: Math, Science, Arabic, English\n    ],\n    \"pieData\": [\n      // Student performance distribution\n      // Array of objects with: { \"name\": \"Category in Arabic\", \"value\": number (count of students) }\n      // Categories: \"ممتاز (90-100)\", \"جيد جداً (80-89)\", \"جيد (70-79)\", \"مقبول (60-69)\", \"ضعيف (<60)\"\n    ]\n  },\n  \"strengths\": [\n    // Array of 3-5 strings describing class strengths\n    // Be specific with numbers and percentages\n    // Write in Arabic\n    // Example: \"أداء متميز في اللغة العربية بمتوسط 88%\"\n  ],\n  \"weaknesses\": [\n    // Array of 3-5 strings describing areas needing improvement\n    // Be specific with numbers and student counts\n    // Write in Arabic\n    // Example: \"5 طلاب يحتاجون إلى دعم عاجل في الرياضيات\"\n  ],\n  \"recommendations\": [\n    // Array of 4-6 actionable recommendations for teachers\n    // Be specific and practical\n    // Write in Arabic\n    // Example: \"تنظيم جلسات تقوية للرياضيات 3 مرات أسبوعياً للطلاب الذين يحصلون على أقل من 60%\"\n  ]\n}\n\nCRITICAL RULES:\n1. Return ONLY valid JSON - no markdown, no explanations, no extra text\n2. All text in Arabic except JSON keys\n3. All numbers must be actual numbers, not strings\n4. lineData, barData, and pieData must be arrays with objects\n5. Each data point must have exactly \"name\" and \"value\" properties\n6. Ensure the JSON is properly formatted and parseable"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.agent",
-      "typeVersion": 3,
-      "position": [
-        448,
-        -320
-      ],
-      "id": "9e474923-2827-4105-ba13-dbdd74593e80",
-      "name": "AI Agent1"
     },
     {
       "parameters": {
@@ -125,8 +92,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        720,
-        -320
+        576,
+        -192
       ],
       "id": "0fa0aa09-27b4-42c9-98a4-4a6a40f5e4de",
       "name": "Code in JavaScript"
@@ -139,8 +106,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        96,
-        -112
+        112,
+        48
       ],
       "id": "bd68b31c-a4f5-461d-99c6-f17f88f9b39b",
       "name": "Groq Chat Model",
@@ -153,16 +120,403 @@
     },
     {
       "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "=You are an expert educational data analyst specializing in student performance analysis for Saudi schools.\n\n\nYOUR TASK\nAnalyze the data and produce a detailed analytical report that includes the following:\n\n1. Overall Performance Summary\nCalculate exact class averages for Math, Science, Arabic, English\nIdentify performance trends across Exam1 → Exam2 → Exam3 → Final\n\nCompute:\nHighest subject average\nLowest subject average\nClass overall average (mean of all subjects)\n\n2. Student Strengths (Top 5)\nIdentify the strongest areas supported by numerical evidence, such as:\nHighest performing subjects\nBehavioral strengths\nPatterns such as:\n“80% من الطلاب أكملوا الواجبات بنسبة أعلى من 90%”\n\n3. Student Weaknesses (Top 5)\nIdentify weaknesses with clear numbers, such as:\nSubjects with low averages\nStudents scoring < 70 in multiple subjects\nLow participation or behavior patterns\n\n4. At-Risk Students\nList students who meet any of the following:\nAverage across all subjects < 60\nAbsences > 10\nDeclining exam trend (Exam1 > Exam2 > Exam3 > Final)\nInclude student name + reason.\n\n5. Top Performers\nIdentify:\nStudents with overall average ≥ 90\nStudents with attendance ≥ 95% and high participation\nProvide names and exact metrics.\n\n6. Subject-Specific Analysis\nProvide:\nLowest-performing subject (with exact average)\nHighest variation subject (using standard deviation or clear evidence)\nCorrelation insights.\n\n7. Data for ALL Visualizations (Very Important)\nYou MUST generate structured, aggregated descriptions that Agent 2 will convert into charts.\nProvide:\nA. Line Chart Data\nB. Bar Chart Data\nC. Pie Chart Data (Performance Distribution)\nD. Area Chart Data\nE. Scatter Chart Data\nF. Radar Chart Data\nG. Stacked Bar Data\nH. Heatmap Data\n \nVERY IMPORTANT RULES\n\nTo ensure Agent 2 can generate perfect JSON:\nRULE 1 — Use ONLY real numbers from the CSV\nIf a value is missing, write:\n\"لا يوجد بيانات كافية لهذا الجزء\"\n\nRULE 2 — Be exact and consistent\nNever approximate. Never guess.\n\nRULE 3 — Be descriptive\nYour report should include detailed paragraphs, but data values must be precise.\n\nRULE 4 — Use Arabic for all narrative text\n(Agent 2 will convert it to JSON later)\n\nRULE 5 — Explicitly label every dataset so Agent 2 can extract it\nExample:\n\"LINE_CHART_DATA:\" ثم البيانات\"\n\nRULE 6 — No JSON in this agent\nThis agent writes a human-style analytical report only.\nAgent 2 will convert to JSON.\n\nFinal Output Format\nYour output should be a full analytical report, in Arabic, containing:\nOverall summary\nStrengths (5)\nWeaknesses (5)\nAt-risk students\nTop performers\nSubject analysis\nRaw chart datasets clearly labeled for Agent 2:\n\ncomments: {\n  lineComment: \"هذا الرسم يوضح تطور أداء الطلاب عبر الزمن...\",\n  barComment: \"يوضح هذا الرسم مقارنة المواد...\",\n  pieComment: \"...\",\n  areaComment: \"...\",\n  scatterComment: \"...\",\n  radarComment: \"...\",\n  stackedBarComment: \"...\",\n  heatmapComment: \"...\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -48,
+        -192
+      ],
+      "id": "79e2ef1e-0f8d-4240-9210-040558e9c241",
+      "name": "AI Agent Analysis"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.output }}",
+        "options": {
+          "systemMessage": "=You are a data formatting specialist.\nYour job is to transform an analytical educational report into a strict JSON format used by a web dashboard.\n\nYou will receive a detailed analytical report about student performance generated by another AI agent.\nYour task is to transform this report into the following EXACT JSON structure:\n\nFor each chart , generate a short comment in Arabic explaining the purpose and benefit of the chart for teachers. Include this comment in a new property inside \"charts\" named \"<chartName>Comment\".\n\n{\n  \"charts\": {\n    \"lineData\": [\n      {name: string,value: number}\n    ],\n    \"barData\": [\n      {name: string,value: number}\n    ],\n    \"pieData\": [\n      {name: string,value: number}\n    ],\n    \"areaData\": [\n      {name: string,value: number}\n    ],\n    \"scatterData\": [\n      // Correlation\n      {x: number,y: number}\n    ],\n    \"radarData\": [\n      // Minimum 4 skills\n      {subject: string,score: number}\n    ],\n    \"stackedBarData\": [\n{\n  name: string,\n  A: number,\n  B: number,\n  C: number\n}\n    ],\n    \"heatmapData\": {\n      // Student x Subject matrix\n      \"subjects\": [\n        // List of subjects in Arabic.\n      ],\n      \"students\": [\n        {\n          \"name\": \"اسم الطالب\",\n          \"values\": []\n        }\n      ]\n    }\n  },\n  \"strengths\": [\n    // 3–5 strings in Arabic\n    // Must include numbers and percentages\n  ],\n  \"weaknesses\": [\n    // 3–5 strings in Arabic\n    // Must include counts and percentages\n  ],\n  \"recommendations\": [\n    // 4–6 actionable recommendations in Arabic\n    // Must be practical and based on the data\n  ]\n}\nCRITICAL RULES (DO NOT BREAK THESE):\nReturn ONLY valid JSON — no markdown, no explanations, no comments.\nAll text must be in Arabic, except JSON keys.\nAll numbers must be actual numbers, not strings.\nEvery chart dataset must be filled with proper objects (no empty arrays).\nEach data point must have the required properties exactly (name/value, etc.).\nJSON must be fully parseable without errors.\nAll arrays must contain realistic, meaningful numbers based strictly on the analytical report."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        256,
+        -192
+      ],
+      "id": "9e474923-2827-4105-ba13-dbdd74593e80",
+      "name": "AI Agent Formatting"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        48
+      ],
+      "id": "d7eb8807-0761-4667-b156-c0bd57f081f0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uQA8Wy0qXjGAfTcR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=language:{{ $json.body.language }}\nStage:{{ $json.body.stage }}\nGrade:{{ $json.body.grade }}\nBook:{{ $json.body.book }}\ninstructions:{{ $json.body.instructions }}\n\n",
+        "options": {
+          "systemMessage": "You are AI Agent 1, specialized in generating high-quality educational slide content following Saudi Ministry of Education standards.\nYour task is to create detailed instructional content tailored for the following inputs:\n\nStage (المرحلة الدراسية): {stage}\n\nGrade (الصف): {grade}\n\nBook name: {book}\n\nTeacher Instructions: {instructions}\n\nLanguage: {language}\n\n🎯 Your Objectives\n\nProduce 10–15 slides, each covering a single learning idea from the selected book and grade.\n\nContent must align with Saudi MOE learning outcomes.\n\nLanguage must match the requested {language}.\n\nContent must be age-appropriate for the stage and grade.\n\n📘 Slide Data You Must Output\n\nFor each slide, return a JSON object with:\n\n{\n  \"title\": \"\",\n  \"content\": \"\",\n  \"summary\": \"\",\n  \"bulletPoints\": [],\n  \"teacherNotes\": \"\",\n  \"studentActivity\": \"\",\n  \"imagePrompt\": \"\",\n  \"keywords\": []\n}\n\nSlide Writing Rules\n\ntitle → Simple, clear, curriculum-aligned.\n\ncontent → 3–5 sentences explaining the concept.\n\nsummary → 1–2 sentences summarizing the key message.\n\nbulletPoints → 3–6 key ideas.\n\nteacherNotes → instructional guidance for the teacher.\n\nstudentActivity → a simple activity matching the grade level.\n\nimagePrompt → a DALL·E-style description (no brand names, no people unless educational).\n\nkeywords → terminology from MOE textbooks.\n\nReturn the final output as:\n\n{\n  \"slides\": [ ... ]\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        -784
+      ],
+      "id": "12a46658-7e92-4d09-b92a-026178ffe102",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        -496
+      ],
+      "id": "094bb37a-0654-4e76-abfe-62232c5ebb62",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "uQA8Wy0qXjGAfTcR",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.slides }}",
+        "options": {
+          "systemMessage": "=You are AI Agent 2, responsible for transforming raw educational content into visually themed slides using Saudi MOE branding.\nUse the MOE theme file provided, ensuring all colors follow moeColors and moduleColors (lectures).\n\nTheme file reference:\n\nPrimary greens, blues, teal\n\nSecondary purple, cyan\n\nUI backgrounds (#FFFFFF, #F5F7FA)\n\nLecture module color: moeColors.primary.blue (#3d7eb9)\n\n🎯 Your Objectives\n\nFor each slide provided by Agent 1, enhance it by adding:\n\nMOE-compliant background color\n\nReadable text color (light-on-dark or dark-on-light)\n\nUnique transition for every slide\n\nOptional gradient (from moeTheme gradients)\n\nOptional accent color matching MOE palette\n\n🎨 Available Background Options (choose across slides)\n\nmoeColors.primary.green\n\nmoeColors.primary.blue\n\nmoeColors.primary.teal\n\nmoeColors.primary.darkBlue\n\nmoeColors.secondary.cyan\n\nmoeColors.ui.background\n\nmoeColors.ui.backgroundSecondary\n\n🎞 Allowed Transitions (must vary per slide)\n\n\"fade\"\n\n\"slide\"\n\n\"zoom\"\n\n\"flip\"\n\n\"scale\"\n\n\"push\"\n\n\"wipe\"\n\n\"cube\"\n\nEnsure transitions do not repeat until all have been used at least once.\n\n📘 Required Output Format\n\nFor every slide from Agent 1, transform it into:\n\n{\n  \"title\": \"\",\n  \"content\": \"\",\n  \"summary\": \"\",\n  \"bulletPoints\": [],\n  \"teacherNotes\": \"\",\n  \"studentActivity\": \"\",\n  \"imagePrompt\": \"\",\n  \"keywords\": [],\n  \"background\": \"\",\n  \"color\": \"\",\n  \"transition\": \"\"\n}\n\nRules\n\nChoose a balanced combination of light and dark backgrounds.\n\nText color must ensure AAA readability:\n\nDark background → #FFFFFF or moeColors.ui.textPrimary\n\nLight background → moeColors.ui.textPrimary\n\nUse moduleColors.lectures (#3d7eb9) as an accent color across multiple slides.\n\nReturn:\n\n{\n  \"slides\": [ ... ]\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        -784
+      ],
+      "id": "2db6af50-30b1-4b24-9bfb-b48b815cc159",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output;\n// Convert to string if needed\nraw = String(raw).trim();\n\n// Remove ```json and ``` markers\nraw = raw.replace(/```json/i, \"\").replace(/```/g, \"\").trim();\n\n// Now parse the clean JSON\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  return [{ json: { error: \"Invalid JSON after cleaning\", raw } }];\n}\n\n// Return parsed JSON\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        48,
+        -784
+      ],
+      "id": "294b9f34-150e-4f32-ae9a-122ac1103821",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output;\n// Convert to string if needed\nraw = String(raw).trim();\n\n// Remove ```json and ``` markers\nraw = raw.replace(/```json/i, \"\").replace(/```/g, \"\").trim();\n\n// Now parse the clean JSON\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  return [{ json: { error: \"Invalid JSON after cleaning\", raw } }];\n}\n\n// Return parsed JSON\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        528,
+        -784
+      ],
+      "id": "4b8d539c-ad36-4f61-a9c5-cf39d048a1f1",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
         "model": "openai/gpt-oss-120b",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        368,
-        -64
+        16,
+        -496
       ],
-      "id": "a44111a2-2703-4272-abe0-1cf36cd18205",
+      "id": "976cf341-f02e-4264-b645-64e2e0f084f7",
+      "name": "Groq Chat Model2",
+      "credentials": {
+        "groqApi": {
+          "id": "39yaqKuLiO92JQW3",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1b5370a0-22f4-46eb-9ff4-7f5fa87b84a5",
+              "leftValue": "={{ $('Webhook').item.json.body.action }}",
+              "rightValue": "={{ $('Webhook').item.json.body.action }}",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -960,
+        352
+      ],
+      "id": "bbd6270b-0ba5-4841-a51f-6cdea28da199",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "content": "## Students List",
+        "height": 624,
+        "width": 1728,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        -304
+      ],
+      "typeVersion": 1,
+      "id": "f234838c-95a5-4a7c-8150-00738ab9a042",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "Student_Name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1232
+      ],
+      "id": "4ae57a95-c2d2-49f3-b5ec-8d394a063b5f",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ef9cb47b-72b7-4025-8fe0-7df655cb965f",
+              "name": "students",
+              "value": "={{ $json.Student_Name }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        1232
+      ],
+      "id": "276ab42f-ca52-434f-b94b-a77370239759",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2cff24fb-3ee7-41d7-b0e2-a60c46018932",
+              "leftValue": "={{ $('Webhook').item.json.body.student }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -960,
+        880
+      ],
+      "id": "f7b17486-acc1-4a0c-9d45-a1ec4d62bf67",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "content": "## Students List",
+        "height": 624,
+        "width": 1728,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        336
+      ],
+      "typeVersion": 1,
+      "id": "118d8ffd-2bdf-4425-8db6-a0dfe5081e71",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Students List",
+        "height": 624,
+        "width": 1728
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -608,
+        976
+      ],
+      "typeVersion": 1,
+      "id": "95066cc9-84a7-44de-a732-a1ecc57f4d65",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bda37b17-8988-4b40-a6f3-c462bbfc2346",
+              "leftValue": "={{ $('Webhook').item.json.body.student }}",
+              "rightValue": "={{ $json.Student_Name }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -464,
+        608
+      ],
+      "id": "76b87a5a-ce00-46c6-8cf2-8b62d87b5b49",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data[0] }}",
+        "options": {
+          "systemMessage": "=You are an educational analytics AI assistant analyzing student performance data. You have been provided with:\n1. A dataset containing student grades, assignments, and performance metrics\n2. A specific student name to analyze\n\nYour task is to provide a comprehensive, personalized analysis for the selected student.\n\n## Required Output Format (JSON):\n{\n  \"summary\": \"A comprehensive 3-4 sentence summary of the student's overall performance, highlighting their current academic standing, trends, and most notable characteristics\",\n  \"recommendations\": [\n    \"Specific, actionable recommendation 1\",\n    \"Specific, actionable recommendation 2\",\n    \"Specific, actionable recommendation 3\",\n    \"Specific, actionable recommendation 4\"\n  ]\n}\n\n## Analysis Guidelines:\n\n### Summary Section:\n- Start with the student's overall academic standing (excellent, good, average, needs improvement)\n- Mention their strongest subjects or areas\n- Highlight any significant trends (improving, declining, consistent)\n- Note their class rank or comparison to peers if applicable\n- Be encouraging but honest\n\n### Recommendations Section (4-6 recommendations):\n1. **Subject-Specific**: Target weakest subjects with concrete study strategies\n2. **Strength Reinforcement**: Suggest ways to leverage their strong areas\n3. **Study Habits**: Provide time management or study technique advice\n4. **Engagement**: Recommend activities, projects, or resources\n5. **Support**: Suggest when to seek help (tutoring, teacher consultation)\n6. **Goal Setting**: Provide achievable short-term goals\n\n## Analysis Criteria to Consider:\n- Overall grade average and GPA\n- Performance trends over time (improving/declining)\n- Consistency across subjects\n- Comparison to class average\n- Homework completion rates\n- Test scores vs. assignment scores\n- Participation and engagement indicators\n- Strengths and weaknesses by subject\n- Areas of concern or excellence\n\n## Tone Guidelines:\n- Professional and constructive\n- Supportive and encouraging\n- Data-driven but empathetic\n- Actionable and specific (avoid vague advice)\n- Culturally sensitive\n- Focus on growth mindset\n\n## Important Notes:\n- Always be specific with recommendations (include time frames, methods, resources)\n- Tailor advice to the student's unique situation\n- Balance criticism with encouragement\n- Ensure recommendations are realistic and achievable\n- Consider learning style differences\n- Prioritize the most impactful interventions\n\nNow analyze the provided student data and return ONLY the JSON response with no additional text or markdown formatting.\n\nAnswer in Arabic"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        112,
+        576
+      ],
+      "id": "bb4ad63c-db80-4235-8ba2-4b65ed47625f",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        608
+      ],
+      "id": "baf87728-e1dc-471e-9280-0a3d155c25db",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "let raw = $input.first().json.output;\n// Convert to string if needed\nraw = String(raw).trim();\n\n// Remove ```json and ``` markers\nraw = raw.replace(/```json/i, \"\").replace(/```/g, \"\").trim();\n\n// Now parse the clean JSON\nlet parsed;\ntry {\n  parsed = JSON.parse(raw);\n} catch (err) {\n  return [{ json: { error: \"Invalid JSON after cleaning\", raw } }];\n}\n\n// Return parsed JSON\nreturn [{ json: parsed }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        576
+      ],
+      "id": "255ae827-c140-4c24-972d-c006b6a86f70",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        784
+      ],
+      "id": "c62ba30e-1797-4336-a28e-6ec817dd4ff2",
       "name": "Groq Chat Model1",
       "credentials": {
         "groqApi": {
@@ -188,7 +542,7 @@
       "main": [
         [
           {
-            "node": "Aggregate",
+            "node": "If",
             "type": "main",
             "index": 0
           }
@@ -199,29 +553,7 @@
       "main": [
         [
           {
-            "node": "AI Agent",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent": {
-      "main": [
-        [
-          {
-            "node": "AI Agent1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "AI Agent1": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
+            "node": "AI Agent Analysis",
             "type": "main",
             "index": 0
           }
@@ -243,8 +575,206 @@
       "ai_languageModel": [
         [
           {
+            "node": "AI Agent Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent Formatting",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Analysis": {
+      "main": [
+        [
+          {
+            "node": "AI Agent Formatting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Formatting": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        []
+      ]
+    },
+    "Groq Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
             "node": "AI Agent",
             "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Respond to Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
             "index": 0
           }
         ]
@@ -254,7 +784,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "AI Agent1",
+            "node": "AI Agent2",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -270,9 +800,9 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "91b02e04-a261-42ab-a01c-18593d11727e",
+  "versionId": "b7142547-2b0a-44f8-8268-f2451341ef4b",
   "activeVersionId": null,
-  "versionCounter": 30,
+  "versionCounter": 102,
   "triggerCount": 1,
   "tags": [],
   "shared": [

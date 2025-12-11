@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area, ScatterChart, Scatter, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer } from "recharts";
-
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 /*
  * TEACHER UPLOAD ANALYTICS MODULE - Owner: analytics branch
  */
@@ -151,10 +152,7 @@ useEffect(() => {
 
     fetchStudentList();
   }
-}, [activeTab]);
-
-
-
+  }, [activeTab]);
 
   const fetchStudentList = async () => {
   try {
@@ -190,7 +188,7 @@ useEffect(() => {
   } finally {
     setLoadingStudentList(false);
   }
-};
+  };
 
 
 
@@ -228,9 +226,7 @@ useEffect(() => {
   } finally {
     setLoadingAnalysis(false);
   }
-};
-
-
+  };
 
   const renderCharts = () => {
   if (!analyticsData?.charts) return null;
@@ -377,14 +373,13 @@ useEffect(() => {
       {/* RADAR CHART */}
       {radarData && (
         <div style={styles.chartCard}>
-          <h3 style={styles.chartTitle}>
+          <h3 style={styles.chartTitle }>
             {isArabic ? 'نقاط القوة والضعف' : 'Strengths & Weaknesses'}
           </h3>
           <ResponsiveContainer width="100%" height={300}>
-            <RadarChart data={radarData}>
+            <RadarChart data={radarData} >
               <PolarGrid />
-              <PolarAngleAxis dataKey="subject" />
-              <PolarRadiusAxis />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 16, fontWeight: 600 }}  />
               <Radar dataKey="score" stroke={moduleColors.analytics} fill={moduleColors.analytics} fillOpacity={0.6} />
               <Legend />
             </RadarChart>
@@ -461,7 +456,7 @@ useEffect(() => {
 
     </div>
   );
-};
+  };
 
   const renderInsights = () => {
     if (!analyticsData) return null;
@@ -511,6 +506,41 @@ useEffect(() => {
       </div>
     );
   };
+
+const downloadPDF = async (elementId, fileName) => {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210; // A4 width in mm
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= 297; // A4 height
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= 297;
+    }
+
+    pdf.save(fileName);
+  } catch (error) {
+    console.error('PDF generation failed:', error);
+    alert(isArabic ? 'فشل إنشاء ملف PDF' : 'Failed to generate PDF');
+  }
+};
 
   const styles = {
     container: { 
@@ -872,6 +902,21 @@ tabs: {
       background: `${moduleColors.curriculum}15`,
       color: moduleColors.curriculum,
     },
+    chartBox: {
+  padding: "20px",
+  background: "#fff",
+  borderRadius: "16px",
+  boxShadow: "0 4px 14px rgba(0,0,0,0.07)",
+},
+
+chartTitle: {
+  marginBottom: "12px",
+  fontWeight: "600",
+  fontSize: "16px",
+  color: moeColors.ui.textPrimary
+}
+
+
 
   };
 
@@ -888,7 +933,7 @@ tabs: {
   <div style={styles.container}>
     <div style={styles.header}>
       <h1 style={styles.title}>
-        {isArabic ? 'التحليلات والاختبارات' : 'Analytics & Assessments'}
+        {isArabic ? 'تحليل المستوى' : 'Analytics & Assessments'}
       </h1>
     </div>
 
@@ -913,73 +958,85 @@ tabs: {
     )}
 
     {/* TAB 1: Analysis Content */}
-    {activeTab === 'analysis' && (
-      <>
-        {(
-          <>
-            <div style={styles.header}>
-              <div style={styles.uploadSection}>
-                <input
-                  type="file"
-                  id="file-upload"
-                  accept=".xlsx,.csv"
-                  onChange={handleFileSelect}
-                  style={styles.fileInput}
-                />
-                <label htmlFor="file-upload" style={styles.fileLabel}>
-                  📎 {isArabic ? 'اختر ملف' : 'Choose File'}
-                </label>
-                {selectedFile && (
-                  <span style={styles.fileName}>
-                    {selectedFile.name}
-                  </span>
-                )}
-                <button
-                  style={styles.uploadBtn}
-                  onClick={handleUploadAndAnalyze}
-                  disabled={uploading || !selectedFile}
-                >
-                  🚀 {uploading
-                    ? (isArabic ? 'جاري التحليل...' : 'Analyzing...')
-                    : (isArabic ? ' تحليل' : 'Analyze')
-                  }
-                </button>
-              </div>
-            </div>
-
-            {!analyticsData && !loading && (
-              <div style={styles.card}>
-                <div style={styles.emptyState}>
-                  <p style={{ fontSize: '48px', marginBottom: '16px' }}>📊</p>
-                  <h3>{isArabic ? 'ابدأ التحليل' : 'Start Analysis'}</h3>
-                  <p>{isArabic ? 'قم برفع ملف Excel أو CSV لتحليل بيانات الطلاب' : 'Upload an Excel or CSV file to analyze student data'}</p>
-                </div>
-              </div>
-            )}
-
-            {loading && !analyticsData && (
-              <div style={styles.card}>
-                <div style={styles.emptyState}>
-                  <p style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</p>
-                  <h3>{isArabic ? 'جاري التحليل...' : 'Analyzing...'}</h3>
-                  <p>{isArabic ? 'يرجى الانتظار بينما نقوم بتحليل البيانات' : 'Please wait while we analyze the data'}</p>
-                </div>
-              </div>
-            )}
-
-            {analyticsData && (
-              <>
-                {renderCharts()}
-                {renderInsights()}
-              </>
-            )}
-          </>
+  {activeTab === 'analysis' && (
+  <>
+    {/* Upload Section */}
+    <div style={styles.header}>
+      <div style={styles.uploadSection}>
+        <input
+          type="file"
+          id="file-upload"
+          accept=".xlsx,.csv"
+          onChange={handleFileSelect}
+          style={styles.fileInput}
+        />
+        <label htmlFor="file-upload" style={styles.fileLabel}>
+          📎 {isArabic ? 'اختر ملف' : 'Choose File'}
+        </label>
+        {selectedFile && (
+          <span style={styles.fileName}>
+            {selectedFile.name}
+          </span>
         )}
-      </>
-    )}
+        <button
+          style={styles.uploadBtn}
+          onClick={handleUploadAndAnalyze}
+          disabled={uploading || !selectedFile}
+        >
+          🚀 {uploading
+            ? (isArabic ? 'جاري التحليل...' : 'Analyzing...')
+            : (isArabic ? ' تحليل' : 'Analyze')
+          }
+        </button>
+      </div>
+      
+      {/* Download Buttons - Show only when data is available */}
+      {analyticsData && (
+        <div style={styles.uploadSection}>
+          <button
+            style={{...styles.uploadBtn, background: moeColors.primary.blue}}
+            onClick={() => downloadPDF('analytics-content', 'class-analytics-report.pdf')}
+          >
+            📄 {isArabic ? 'تحميل PDF' : 'Download PDF'}
+          </button>
+        </div>
+      )}
+    </div>
+
+    {/* Wrap content in a div with ID for PDF generation */}
+    <div id="analytics-content">
+      {!analyticsData && !loading && (
+        <div style={styles.card}>
+          <div style={styles.emptyState}>
+            <p style={{ fontSize: '48px', marginBottom: '16px' }}>📊</p>
+            <h3>{isArabic ? 'ابدأ التحليل' : 'Start Analysis'}</h3>
+            <p>{isArabic ? 'قم برفع ملف Excel أو CSV لتحليل بيانات الطلاب' : 'Upload an Excel or CSV file to analyze student data'}</p>
+          </div>
+        </div>
+      )}
+
+      {loading && !analyticsData && (
+        <div style={styles.card}>
+          <div style={styles.emptyState}>
+            <p style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</p>
+            <h3>{isArabic ? 'جاري التحليل...' : 'Analyzing...'}</h3>
+            <p>{isArabic ? 'يرجى الانتظار بينما نقوم بتحليل البيانات' : 'Please wait while we analyze the data'}</p>
+          </div>
+        </div>
+      )}
+
+      {analyticsData && (
+        <>
+          {renderCharts()}
+          {renderInsights()}
+        </>
+      )}
+    </div>
+  </>
+  )}
 
     {/* TAB 2: Analysis for each student Content */}
-{activeTab === 'student-analysis' && (
+  {activeTab === 'student-analysis' && (
   <div>
     {/* CHECK IF FILE IS UPLOADED FIRST */}
     {!uploadedFileData ? (
@@ -987,26 +1044,20 @@ tabs: {
         <div style={styles.emptyState}>
           <p style={{ fontSize: '48px', marginBottom: '16px' }}>📤</p>
           <h3>{isArabic ? 'يرجى رفع الملف أولاً' : 'Please Upload File First'}</h3>
-          <p>{isArabic ? 'قم بالذهاب إلى تبويب "التحليل" ورفع ملف Excel أو CSV أولاً' : 'Go to "Analysis" tab and upload an Excel or CSV file first'}</p>
-          <button
-            style={styles.actionBtn}
-            onClick={() => setActiveTab('analysis')}
-          >
-            {isArabic ? 'الذهاب إلى التحليل' : 'Go to Analysis'}
-          </button>
+          <p>{isArabic ? 'قم برفع ملف Excel أو CSV في تبويب التحليل' : 'Upload a file first in the Analysis tab'}</p>
         </div>
       </div>
     ) : (
       <>
-        {/* Dropdown Section */}
-        <div style={{ marginBottom: "20px" }}>
-          <label style={{ fontWeight: "600", marginRight: "10px" }}>
-            {isArabic ? "اختر طالب:" : "Select Student:"}
-          </label>
+        {/* Student Selector */}
+        <div style={{ marginBottom: "20px", display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+          
+          {/* Dropdown */}
+          <div>
+            <label style={{ fontWeight: "600", marginRight: "10px" }}>
+              {isArabic ? "اختر طالب:" : "Select Student:"}
+            </label>
 
-          {loadingStudentList ? (
-            <span>{isArabic ? "جاري التحميل..." : "Loading..."}</span>
-          ) : (
             <select
               style={{
                 padding: "8px",
@@ -1023,71 +1074,141 @@ tabs: {
               <option value="">
                 {isArabic ? "اختر طالبًا" : "Choose a student"}
               </option>
-
               {studentList.map((student, index) => (
                 <option key={index} value={student}>
                   {student}
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* PDF button */}
+          {studentAnalysis && selectedStudent && (
+            <button
+              style={{...styles.uploadBtn, background: moeColors.primary.blue}}
+              onClick={() => downloadPDF('student-analysis-content', `student-report-${selectedStudent}.pdf`)}
+            >
+              📄 {isArabic ? 'تحميل PDF' : 'Download PDF'}
+            </button>
           )}
         </div>
 
-        {/* Analysis Content */}
-        {loadingAnalysis && (
-          <div style={styles.card}>
-            <div style={styles.emptyState}>
-              <p style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</p>
-              <h3>{isArabic ? 'جاري التحليل...' : 'Analyzing...'}</h3>
-              <p>{isArabic ? 'يرجى الانتظار بينما نقوم بتحليل بيانات الطالب' : 'Please wait while we analyze student data'}</p>
-            </div>
-          </div>
-        )}
-
-        {!loadingAnalysis && studentAnalysis && (
-          <div style={styles.card}>
-            <h3 style={styles.chartTitle}>
-              {isArabic ? `نتيجة التحليل - ${selectedStudent}` : `Analysis Result - ${selectedStudent}`}
-            </h3>
-
-            <div style={{ marginBottom: '20px' }}>
-              <h4 style={{ color: moduleColors.analytics, marginBottom: '12px' }}>
-                {isArabic ? 'الملخص:' : 'Summary:'}
-              </h4>
-              <p style={{ lineHeight: '1.6', color: moeColors.ui.textPrimary }}>
-                {studentAnalysis.summary}
-              </p>
-            </div>
-
-            {studentAnalysis.recommendations && studentAnalysis.recommendations.length > 0 && (
-              <div>
-                <h4 style={{ color: moduleColors.analytics, marginBottom: '12px' }}>
-                  💡 {isArabic ? 'التوصيات:' : 'Recommendations:'}
-                </h4>
-                <ul style={styles.insightList}>
-                  {studentAnalysis.recommendations.map((rec, i) => (
-                    <li key={i} style={styles.insightItem}>{rec}</li>
-                  ))}
-                </ul>
+        {/* Analysis Content Wrapper */}
+        <div id="student-analysis-content">
+          
+          {/* Loading State */}
+          {loadingAnalysis && (
+            <div style={styles.card}>
+              <div style={styles.emptyState}>
+                <p style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</p>
+                <h3>{isArabic ? 'جاري التحليل...' : 'Analyzing...'}</h3>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* Show message when no student is selected */}
-        {!loadingAnalysis && !studentAnalysis && selectedStudent === null && (
-          <div style={styles.card}>
-            <div style={styles.emptyState}>
-              <p style={{ fontSize: '48px', marginBottom: '16px' }}>👨‍🎓</p>
-              <h3>{isArabic ? 'اختر طالبًا للتحليل' : 'Select a Student to Analyze'}</h3>
-              <p>{isArabic ? 'اختر طالبًا من القائمة أعلاه لعرض التحليل الخاص به' : 'Select a student from the dropdown above to view their analysis'}</p>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Summary */}
+          {!loadingAnalysis && studentAnalysis && (
+            <div style={styles.card}>
+              <h3 style={styles.chartTitle}>
+                {isArabic ? `نتيجة التحليل - ${selectedStudent}` : `Analysis Result - ${selectedStudent}`}
+              </h3>
+
+              <div style={{ marginBottom: '20px' }}>
+                <h4 style={{ color: moduleColors.analytics, marginBottom: '12px' }}>
+                  {isArabic ? 'الملخص:' : 'Summary:'}
+                </h4>
+                <p style={{ lineHeight: '1.6', color: moeColors.ui.textPrimary }}>
+                  {studentAnalysis.summary}
+                </p>
+              </div>
+
+              {/* Recommendations */}
+              {studentAnalysis.recommendations?.length > 0 && (
+                <div>
+                  <h4 style={{ color: moduleColors.analytics, marginBottom: '12px' }}>
+                    💡 {isArabic ? 'التوصيات:' : 'Recommendations:'}
+                  </h4>
+                  <ul style={styles.insightList}>
+                    {studentAnalysis.recommendations.map((rec, i) => (
+                      <li key={i} style={styles.insightItem}>{rec}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ===== CHARTS SECTION — SAFE VERSION ===== */}
+          {studentAnalysis?.charts && (
+            <div style={{ marginTop: "30px" }}>
+              <h4 style={{ color: moduleColors.analytics, marginBottom: "16px" }}>
+                {isArabic ? "الرسوم البيانية" : "Charts"}
+              </h4>
+
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "20px",
+              }}>
+
+                {/* SUBJECT SCORES BAR CHART */}
+                {studentAnalysis.charts.subjects && (
+                  <div style={styles.chartBox}>
+                    <h5 style={styles.chartTitle}>
+                      {isArabic ? "درجات المواد" : "Subject Scores"}
+                    </h5>
+                    <BarChart width={380} height={250} data={studentAnalysis.charts.subjects}>
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="score" fill={moeColors.primary.blue} />
+                    </BarChart>
+                  </div>
+                )}
+
+                {/* EXAM TREND */}
+                {studentAnalysis.charts.examTrend && (
+                  <div style={styles.chartBox}>
+                    <h5 style={styles.chartTitle}>
+                      {isArabic ? "تطور الدرجات" : "Exam Trend"}
+                    </h5>
+                    <LineChart width={380} height={250} data={studentAnalysis.charts.examTrend}>
+                      <XAxis dataKey="exam" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="score" stroke={moeColors.primary.green} />
+                    </LineChart>
+                  </div>
+                )}
+
+                {/* ENGAGEMENT */}
+                {studentAnalysis.charts.engagement && (
+                  <div style={styles.chartBox}>
+                    <h5 style={styles.chartTitle}>
+                      {isArabic ? "مؤشرات السلوك والمشاركة" : "Engagement Indicators"}
+                    </h5>
+                    <RadarChart width={380} height={250} data={studentAnalysis.charts.engagement}>
+                      <PolarGrid />
+                      <PolarAngleAxis dataKey="name" />
+                      <Radar dataKey="score" stroke={moeColors.primary.orange} fill={moeColors.primary.orange} fillOpacity={0.6} />
+                      <Tooltip />
+                    </RadarChart>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          )}
+
+        </div>
       </>
     )}
   </div>
 )}
+
+
   </div>
 );
 };

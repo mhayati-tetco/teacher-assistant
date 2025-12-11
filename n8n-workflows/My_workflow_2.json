@@ -1,0 +1,104 @@
+{
+  "updatedAt": "2025-12-08T05:53:05.000Z",
+  "createdAt": "2025-12-08T05:40:16.594Z",
+  "id": "gQSBqHE0RVF97Sli",
+  "name": "My workflow 2",
+  "description": null,
+  "active": false,
+  "isArchived": true,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fdda4858-d13d-4bed-b88a-5b1383a6af0e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:Users/admin/OneDrive - Tatweer educational technologies/Desktop/_مهام فريق الذكاء الاصطناعي 1.pptx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3e445a75-c3f5-436d-b490-646684d8d22b",
+      "name": "Read/Write Files from Disk",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        0
+      ],
+      "id": "d6a0e48e-84e7-4b60-9882-0c806d7d1114",
+      "name": "Extract from File"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "5f392208-f239-476e-8195-d9f2f63bd2f9",
+  "activeVersionId": null,
+  "versionCounter": 4,
+  "triggerCount": 0,
+  "tags": [],
+  "shared": [
+    {
+      "updatedAt": "2025-12-08T05:40:16.608Z",
+      "createdAt": "2025-12-08T05:40:16.608Z",
+      "role": "workflow:owner",
+      "workflowId": "gQSBqHE0RVF97Sli",
+      "projectId": "VVYuYvi2YmhR1gks",
+      "project": {
+        "updatedAt": "2025-12-03T10:45:59.799Z",
+        "createdAt": "2025-12-03T08:25:44.389Z",
+        "id": "VVYuYvi2YmhR1gks",
+        "name": "Abdullah Balqasim <abod098.a.d@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null
+      }
+    }
+  ]
+}
